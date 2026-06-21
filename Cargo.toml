@@ -1,0 +1,18 @@
+[package]
+name = "netweft"
+version = "0.0.1"
+edition = "2024"
+description = "Deterministic network planning and configuration generation for portable infrastructure."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/orbyts/netweft"
+homepage = "https://github.com/orbyts/netweft"
+documentation = "https://docs.rs/netweft"
+keywords = ["network", "homelab", "configuration", "ipv6", "dns"]
+categories = ["command-line-utilities", "config", "network-programming"]
+
+[[bin]]
+name = "netweft"
+path = "src/main.rs"
+
+[dependencies]
