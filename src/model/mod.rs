@@ -366,6 +366,8 @@ pub struct AllocationsFile {
 pub struct UlaAllocations {
     pub prefix: Ipv6Net,
     #[serde(default)]
+    pub segments: BTreeMap<String, u16>,
+    #[serde(default)]
     pub networks: BTreeMap<String, u16>,
 }
 
@@ -452,6 +454,7 @@ pub struct LocationInterface {
     pub segment: String,
     pub ipv4: Option<Ipv4Addr>,
     pub ipv6_mode: Option<InterfaceIpv6Mode>,
+    pub ula_interface_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -56,10 +56,25 @@ pub enum ShowCommand {
     DnsAccess,
     /// Show the resolved DNS plan without generating files.
     Dns,
+    /// Show the generated environment plan for a host.
+    Env {
+        #[arg(long)]
+        host: String,
+    },
 }
 
 #[derive(Debug, Subcommand)]
 pub enum RenderCommand {
     /// Render a complete BIND configuration for the active location.
     Bind,
+    /// Render Docker Compose and shell environment files for a host.
+    Env {
+        #[arg(long)]
+        host: String,
+    },
+    /// Render all artifacts for a host.
+    All {
+        #[arg(long)]
+        host: String,
+    },
 }

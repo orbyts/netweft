@@ -1,9 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::net::{Ipv4Addr, Ipv6Addr};
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result};
 
 use crate::model::{AddressFamily, AddressScope, ConfigBundle, DnsRecordKind, Ipv6Mode, Service};
+use crate::plan::address::{host_ula, service_ula};
 use crate::plan::dns_access::{ResolvedDnsAccess, derive_dns_access};
 
 #[derive(Debug)]
@@ -141,6 +142,7 @@ pub fn resolve_dns_plan(bundle: &ConfigBundle) -> Result<ResolvedDnsPlan> {
     )?;
 
     let mut ptrs = Vec::new();
+    let mut ptrs_v6 = Vec::new();
 
     for record in &bundle.dns.records {
         let publish_ipv4 = record.families.contains(&AddressFamily::Ipv4);
@@ -166,7 +168,11 @@ pub fn resolve_dns_plan(bundle: &ConfigBundle) -> Result<ResolvedDnsPlan> {
                 }
 
                 if publish_ipv6 {
-                    reject_unstable_ipv6(bundle, &record.name)?;
+                    let address = host_ula(bundle, target, interface)?;
+                    add_aaaa(&mut zones, &record.name, address)?;
+                    if record.reverse {
+                        ptrs_v6.push((address, fqdn(&record.name)));
+                    }
                 }
             }
             DnsRecordKind::Service => {
@@ -197,7 +203,21 @@ pub fn resolve_dns_plan(bundle: &ConfigBundle) -> Result<ResolvedDnsPlan> {
                 }
 
                 if publish_ipv6 {
-                    reject_unstable_ipv6(bundle, &record.name)?;
+                    let address = match scope {
+                        AddressScope::Container => service_ula(bundle, service)?,
+                        AddressScope::Ingress => {
+                            let ingress = service
+                                .ingress
+                                .as_ref()
+                                .context("service ingress missing")?;
+                            host_ula(bundle, &service.host, &ingress.interface)?
+                        }
+                    };
+
+                    add_aaaa(&mut zones, &record.name, address)?;
+                    if record.reverse {
+                        ptrs_v6.push((address, fqdn(&record.name)));
+                    }
                 }
             }
             DnsRecordKind::Proxy => {
@@ -216,7 +236,12 @@ pub fn resolve_dns_plan(bundle: &ConfigBundle) -> Result<ResolvedDnsPlan> {
                 }
 
                 if publish_ipv6 {
-                    reject_unstable_ipv6(bundle, &record.name)?;
+                    let ingress = proxy.ingress.as_ref().context("proxy ingress missing")?;
+                    add_aaaa(
+                        &mut zones,
+                        &record.name,
+                        host_ula(bundle, &proxy.host, &ingress.interface)?,
+                    )?;
                 }
             }
             DnsRecordKind::Cname => {
@@ -313,19 +338,9 @@ pub fn resolve_dns_plan(bundle: &ConfigBundle) -> Result<ResolvedDnsPlan> {
         ingress_ipv4,
         access,
         zones,
-        reverse_zones: build_reverse_zones(ptrs),
+        reverse_zones: build_reverse_zones(ptrs, ptrs_v6),
         warnings,
     })
-}
-
-fn reject_unstable_ipv6(bundle: &ConfigBundle, name: &str) -> Result<()> {
-    if bundle.location.ipv6.mode == Ipv6Mode::RouterAdvertised {
-        bail!(
-            "DNS record '{name}' requests IPv6, but location '{}' has only router-advertised IPv6",
-            bundle.location.name
-        );
-    }
-    Ok(())
 }
 
 fn resolve_service_ingress_ipv4(bundle: &ConfigBundle, service: &Service) -> Result<Ipv4Addr> {
@@ -372,6 +387,21 @@ fn add_a(
     )
 }
 
+fn add_aaaa(
+    zones: &mut BTreeMap<String, BTreeSet<ResolvedRecord>>,
+    name: &str,
+    address: Ipv6Addr,
+) -> Result<()> {
+    add_record(
+        zones,
+        name,
+        ResolvedRecord::Aaaa {
+            name: fqdn(name),
+            address,
+        },
+    )
+}
+
 fn add_record(
     zones: &mut BTreeMap<String, BTreeSet<ResolvedRecord>>,
     name: &str,
@@ -402,7 +432,10 @@ fn fqdn(value: &str) -> String {
     }
 }
 
-fn build_reverse_zones(ptrs: Vec<(Ipv4Addr, String)>) -> Vec<ResolvedReverseZone> {
+fn build_reverse_zones(
+    ptrs: Vec<(Ipv4Addr, String)>,
+    ptrs_v6: Vec<(Ipv6Addr, String)>,
+) -> Vec<ResolvedReverseZone> {
     let mut zones: BTreeMap<String, Vec<(String, String)>> = BTreeMap::new();
 
     for (address, target) in ptrs {
@@ -413,6 +446,27 @@ fn build_reverse_zones(ptrs: Vec<(Ipv4Addr, String)>) -> Vec<ResolvedReverseZone
             .entry(zone)
             .or_default()
             .push((octets[3].to_string(), target));
+    }
+
+    for (address, target) in ptrs_v6 {
+        let full = format!("{:032x}", u128::from(address));
+        let zone_part: String = full[..16]
+            .chars()
+            .rev()
+            .map(|character| format!("{character}."))
+            .collect();
+        let owner: String = full[16..]
+            .chars()
+            .rev()
+            .map(|character| format!("{character}."))
+            .collect::<String>()
+            .trim_end_matches('.')
+            .to_owned();
+
+        zones
+            .entry(format!("{zone_part}ip6.arpa"))
+            .or_default()
+            .push((owner, target));
     }
 
     zones
