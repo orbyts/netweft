@@ -117,6 +117,8 @@ pub struct LogicalNetwork {
     pub ula_enabled: bool,
     #[serde(default)]
     pub reverse_dns: bool,
+    #[serde(default = "default_true")]
+    pub dns_clients: bool,
     pub routing: Option<NetworkRouting>,
 }
 
@@ -162,8 +164,22 @@ pub struct Service {
     #[serde(default)]
     pub ports: Vec<PortMapping>,
     pub runtime: Option<BTreeMap<String, String>>,
+    pub ingress: Option<ServiceIngress>,
     pub ssh: Option<SshService>,
     pub web: Option<WebService>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceIngress {
+    pub mode: IngressMode,
+    pub interface: String,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum IngressMode {
+    HostPort,
 }
 
 #[derive(Debug, Deserialize)]
@@ -227,7 +243,7 @@ pub struct DnsFile {
     #[serde(default)]
     pub zones: Vec<DnsZone>,
     #[serde(default)]
-    pub aliases: Vec<DnsAlias>,
+    pub records: Vec<DnsRecord>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -252,11 +268,26 @@ pub struct SoaSettings {
     pub expire: u32,
 }
 
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Deserialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct RecursionSettings {
-    #[serde(default)]
     pub enabled: bool,
+    pub include_location_segments: bool,
+    pub include_tailscale: bool,
+    pub include_ula: bool,
+    pub include_docker_networks: bool,
+}
+
+impl Default for RecursionSettings {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            include_location_segments: true,
+            include_tailscale: true,
+            include_ula: true,
+            include_docker_networks: true,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -287,11 +318,40 @@ pub enum DnsVisibility {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct DnsAlias {
+pub struct DnsRecord {
     pub name: String,
-    pub target_service: Option<String>,
-    pub target_host: Option<String>,
+    pub kind: DnsRecordKind,
+    pub target: Option<String>,
     pub interface: Option<String>,
+    pub address_scope: Option<AddressScope>,
+    #[serde(default = "default_ipv4_families")]
+    pub families: Vec<AddressFamily>,
+    #[serde(default)]
+    pub reverse: bool,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum DnsRecordKind {
+    Host,
+    Service,
+    Proxy,
+    Cname,
+    SegmentGateway,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum AddressScope {
+    Container,
+    Ingress,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum AddressFamily {
+    Ipv4,
+    Ipv6,
 }
 
 #[derive(Debug, Deserialize)]
@@ -322,8 +382,6 @@ pub struct LocationFile {
     pub hosts: BTreeMap<String, LocationHost>,
     #[serde(default)]
     pub tailscale: LocationTailscale,
-    #[serde(default)]
-    pub dns: LocationDns,
 }
 
 #[derive(Debug, Deserialize)]
@@ -338,8 +396,7 @@ pub struct Router {
 #[serde(deny_unknown_fields)]
 pub struct LocationIpv6 {
     pub mode: Ipv6Mode,
-    pub observed_prefix: Option<Ipv6Net>,
-    pub delegated_prefix: Option<Ipv6Net>,
+    pub prefix: Option<Ipv6Net>,
     pub subnet_prefix_length: Option<u8>,
     pub stability: PrefixStability,
     #[serde(default)]
@@ -369,6 +426,10 @@ pub struct Segment {
     pub ipv4_gateway: Ipv4Addr,
     pub vlan_id: Option<u16>,
     pub public_ipv6_allocation: Option<u32>,
+    #[serde(default = "default_true")]
+    pub dns_clients: bool,
+    #[serde(default = "default_true")]
+    pub reverse_dns: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -433,22 +494,6 @@ pub struct TailscaleRouterSettings {
     pub exit_node: bool,
     #[serde(default)]
     pub advertise: Vec<String>,
-}
-
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct LocationDns {
-    #[serde(default)]
-    pub recursion: LocationDnsRecursion,
-}
-
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct LocationDnsRecursion {
-    #[serde(default)]
-    pub allow_ipv4: Vec<Ipv4Net>,
-    #[serde(default)]
-    pub allow_ipv6: Vec<Ipv6Net>,
 }
 
 #[derive(Debug)]
@@ -528,4 +573,8 @@ pub fn parse_ip(value: &str) -> Result<IpAddr, std::net::AddrParseError> {
 
 fn default_true() -> bool {
     true
+}
+
+fn default_ipv4_families() -> Vec<AddressFamily> {
+    vec![AddressFamily::Ipv4]
 }

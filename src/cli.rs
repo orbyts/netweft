@@ -29,10 +29,16 @@ pub enum Command {
         location: Option<String>,
     },
 
-    /// Inspect typed configuration objects.
+    /// Inspect typed or derived configuration objects.
     Show {
         #[command(subcommand)]
         command: ShowCommand,
+    },
+
+    /// Generate configuration artifacts without deploying them.
+    Render {
+        #[command(subcommand)]
+        command: RenderCommand,
     },
 }
 
@@ -46,4 +52,14 @@ pub enum ShowCommand {
     Networks,
     /// List services.
     Services,
+    /// Show networks automatically allowed to use DNS recursion.
+    DnsAccess,
+    /// Show the resolved DNS plan without generating files.
+    Dns,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum RenderCommand {
+    /// Render a complete BIND configuration for the active location.
+    Bind,
 }

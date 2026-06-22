@@ -3,6 +3,7 @@ use std::collections::BTreeSet;
 use anyhow::{Result, bail};
 
 use crate::model::{ConfigBundle, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy};
+use crate::plan::dns_access::derive_dns_access;
 
 #[derive(Debug, Default)]
 pub struct ValidationReport {
@@ -14,6 +15,10 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_location(bundle)?;
     validate_references(bundle)?;
     validate_addresses(bundle)?;
+
+    if bundle.dns.dns.recursion.enabled {
+        derive_dns_access(bundle)?;
+    }
 
     let mut report = ValidationReport::default();
 
@@ -27,10 +32,10 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     }
 
     if bundle.location.ipv6.mode == Ipv6Mode::RouterAdvertised
-        && bundle.location.ipv6.observed_prefix.is_some()
+        && bundle.location.ipv6.prefix.is_some()
     {
         report.warnings.push(format!(
-            "location '{}' has a dynamic observed IPv6 prefix; Netweft will not treat it as allocatable",
+            "location '{}' has a dynamic router-advertised IPv6 prefix; Netweft will allow it for recursion but will not treat it as allocatable",
             bundle.location.name
         ));
     }
@@ -84,22 +89,26 @@ fn validate_location(bundle: &ConfigBundle) -> Result<()> {
 
     match bundle.location.ipv6.mode {
         Ipv6Mode::Disabled => {
-            if bundle.location.ipv6.observed_prefix.is_some()
-                || bundle.location.ipv6.delegated_prefix.is_some()
-            {
+            if bundle.location.ipv6.prefix.is_some() {
                 bail!("IPv6 mode is disabled but an IPv6 prefix is configured");
             }
         }
         Ipv6Mode::RouterAdvertised => {
-            if bundle.location.ipv6.delegated_prefix.is_some() {
-                bail!("router-advertised IPv6 cannot also define delegated_prefix");
+            let prefix =
+                bundle.location.ipv6.prefix.ok_or_else(|| {
+                    anyhow::anyhow!("router-advertised IPv6 mode requires prefix")
+                })?;
+
+            if prefix.prefix_len() != 64 {
+                bail!("router-advertised IPv6 prefix must be /64, got {prefix}");
             }
         }
         Ipv6Mode::Delegated => {
-            let prefix =
-                bundle.location.ipv6.delegated_prefix.ok_or_else(|| {
-                    anyhow::anyhow!("delegated IPv6 mode requires delegated_prefix")
-                })?;
+            let prefix = bundle
+                .location
+                .ipv6
+                .prefix
+                .ok_or_else(|| anyhow::anyhow!("delegated IPv6 mode requires prefix"))?;
             let subnet_length = bundle.location.ipv6.subnet_prefix_length.unwrap_or(64);
 
             if subnet_length != 64 {
@@ -189,28 +198,52 @@ fn validate_references(bundle: &ConfigBundle) -> Result<()> {
         );
     }
 
-    for alias in &bundle.dns.aliases {
-        match (&alias.target_service, &alias.target_host) {
-            (Some(service), None) => {
-                if !bundle.services.services.contains_key(service) {
+    for record in &bundle.dns.records {
+        match record.kind {
+            crate::model::DnsRecordKind::Host => {
+                let target = record.target.as_ref().ok_or_else(|| {
+                    anyhow::anyhow!("DNS host record '{}' requires target", record.name)
+                })?;
+                if !bundle.inventory.hosts.contains_key(target) {
                     bail!(
-                        "DNS alias '{}' references unknown service '{service}'",
-                        alias.name
+                        "DNS record '{}' references unknown host '{target}'",
+                        record.name
+                    );
+                }
+                if record.interface.is_none() {
+                    bail!("DNS host record '{}' requires interface", record.name);
+                }
+            }
+            crate::model::DnsRecordKind::Service | crate::model::DnsRecordKind::Proxy => {
+                let target = record.target.as_ref().ok_or_else(|| {
+                    anyhow::anyhow!("DNS service record '{}' requires target", record.name)
+                })?;
+                if !bundle.services.services.contains_key(target) {
+                    bail!(
+                        "DNS record '{}' references unknown service '{target}'",
+                        record.name
                     );
                 }
             }
-            (None, Some(host)) => {
-                if !bundle.inventory.hosts.contains_key(host) {
+            crate::model::DnsRecordKind::Cname => {
+                if record.target.is_none() {
+                    bail!("DNS CNAME record '{}' requires target", record.name);
+                }
+            }
+            crate::model::DnsRecordKind::SegmentGateway => {
+                let target = record.target.as_ref().ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "DNS gateway record '{}' requires segment target",
+                        record.name
+                    )
+                })?;
+                if !bundle.location.segments.contains_key(target) {
                     bail!(
-                        "DNS alias '{}' references unknown host '{host}'",
-                        alias.name
+                        "DNS record '{}' references unknown segment '{target}'",
+                        record.name
                     );
                 }
             }
-            _ => bail!(
-                "DNS alias '{}' must define exactly one of target_service or target_host",
-                alias.name
-            ),
         }
     }
 
