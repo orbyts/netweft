@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use netweft::adapter::AdapterContext;
 use netweft::adapters::builtin_registry;
-use netweft::cli::{Cli, Command, RenderCommand, ShowCommand};
+use netweft::cli::{AdapterCommand, Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
 use netweft::plan::dns::resolve_dns_plan;
@@ -63,6 +63,17 @@ fn main() -> Result<()> {
                 ShowCommand::Env { host } => {
                     let plan = resolve_env_plan(&bundle, &paths, &host)?;
                     plan.print();
+                }
+            }
+        }
+        Command::Adapters { command } => {
+            let registry = builtin_registry()?;
+            match command {
+                AdapterCommand::List => {
+                    for adapter in registry.iter() {
+                        let metadata = adapter.metadata();
+                        println!("{}	{}	{}", metadata.id, metadata.name, metadata.description);
+                    }
                 }
             }
         }
