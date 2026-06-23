@@ -1599,3 +1599,16 @@ These boundaries are deliberate. Generated plans remain inspectable before anyth
 # License
 
 MIT
+
+## Adapter architecture
+
+Netweft's renderers are exposed through a public adapter SDK. The reference CLI
+currently includes BIND and host-environment adapters while preserving the
+original render commands.
+
+```bash
+netweft adapters list
+```
+
+See [`docs/ADAPTERS.md`](docs/ADAPTERS.md) for the public interface and
+[`docs/REFACTOR-0.2.md`](docs/REFACTOR-0.2.md) for the compatibility contract.
