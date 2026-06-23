@@ -1,0 +1,57 @@
+schema_version = 1
+
+[domains]
+primary = "suhail.ink"
+additional = ["suhail.photos", "suhail.art", "suhail.life"]
+
+[hosts.nexus]
+kind = "physical"
+roles = ["infrastructure", "dns", "proxy", "docker", "tailscale"]
+runtime_root = "/var/lib/suhail/services/nexus"
+ssh_user = "suhail"
+enabled = true
+
+
+[hosts.zion]
+kind = "physical"
+roles = ["proxmox"]
+ssh_user = "suhail"
+enabled = true
+
+[hosts.atlas]
+kind = "physical"
+roles = ["proxmox"]
+ssh_user = "suhail"
+enabled = true
+
+[hosts.summit]
+kind = "physical"
+roles = ["proxmox"]
+ssh_user = "suhail"
+enabled = false
+
+[hosts.vortex]
+kind = "vm"
+parent = "zion"
+roles = ["docker", "gpu", "development"]
+runtime_root = "/var/lib/suhail/services/vortex"
+ssh_user = "suhail"
+enabled = true
+
+
+[hosts.eclipse]
+kind = "laptop"
+roles = ["client", "development"]
+enabled = true
+
+
+[hosts.quasar]
+kind = "workstation"
+roles = ["client", "development"]
+enabled = true
+
+
+[hosts.ds1621plus]
+kind = "nas"
+roles = ["storage"]
+enabled = true
