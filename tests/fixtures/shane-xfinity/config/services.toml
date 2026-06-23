@@ -1,0 +1,97 @@
+schema_version = 1
+
+[services.bind9]
+kind = "dns"
+host = "nexus"
+network = "nexus-containers"
+enabled = true
+
+[services.bind9.address]
+ipv4 = "10.78.29.29"
+ipv6_interface_id = "2929"
+
+[services.bind9.ingress]
+mode = "host-port"
+interface = "lan"
+
+[[services.bind9.ports]]
+host = 53
+container = 53
+protocol = "tcp"
+
+[[services.bind9.ports]]
+host = 53
+container = 53
+protocol = "udp"
+
+[services.bind9.runtime]
+cache = "{host.runtime_root}/bind/cache"
+
+[services.nginx]
+kind = "reverse-proxy"
+host = "nexus"
+network = "nexus-containers"
+enabled = true
+
+[services.nginx.address]
+ipv4 = "10.78.88.88"
+ipv6_interface_id = "8888"
+
+[services.nginx.ingress]
+mode = "host-port"
+interface = "lan"
+
+[[services.nginx.ports]]
+host = 80
+container = 80
+protocol = "tcp"
+
+[[services.nginx.ports]]
+host = 443
+container = 443
+protocol = "tcp"
+
+[services.nginx.runtime]
+certificates = "{host.runtime_root}/nginx/certs"
+
+[services.db]
+kind = "database"
+host = "nexus"
+network = "nexus-containers"
+enabled = true
+
+[services.db.address]
+ipv4 = "10.78.29.31"
+ipv6_interface_id = "2931"
+
+[services.db.runtime]
+data = "{host.runtime_root}/mariadb/data"
+
+[services.neuron]
+kind = "development-container"
+host = "vortex"
+network = "vortex-containers"
+enabled = true
+
+[services.neuron.ssh]
+user = "dev"
+host_port = 22223
+container_port = 22
+route = "tailscale-host"
+
+[services.jellyfin]
+kind = "web"
+host = "vortex"
+network = "vortex-containers"
+enabled = true
+
+[services.jellyfin.address]
+ipv4 = "10.74.1.10"
+ipv6_interface_id = "10"
+
+[services.jellyfin.web]
+container_port = 8096
+domain = "jellyfin.suhail.ink"
+access = "reverse-proxy"
+proxy = "nginx"
+tls = true

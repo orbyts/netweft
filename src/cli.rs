@@ -40,6 +40,12 @@ pub enum Command {
         #[command(subcommand)]
         command: RenderCommand,
     },
+
+    /// Inspect adapters compiled into this Netweft binary.
+    Adapters {
+        #[command(subcommand)]
+        command: AdapterCommand,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -77,4 +83,10 @@ pub enum RenderCommand {
         #[arg(long)]
         host: String,
     },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum AdapterCommand {
+    /// List adapters and their capabilities.
+    List,
 }

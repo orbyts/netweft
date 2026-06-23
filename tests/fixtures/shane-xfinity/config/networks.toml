@@ -1,0 +1,32 @@
+schema_version = 1
+
+[networks.nexus-containers]
+kind = "docker"
+owner = "nexus"
+docker_name = "fuji"
+ipv4_cidr = "10.78.0.0/16"
+ipv4_gateway = "10.78.0.1"
+allocation_key = "nexus-containers"
+preferred_display_id = 121
+ula_enabled = true
+reverse_dns = true
+
+[networks.nexus-containers.routing]
+from = "nexus"
+mode = "direct"
+
+[networks.vortex-containers]
+kind = "docker"
+owner = "vortex"
+docker_name = "pulse"
+ipv4_cidr = "10.74.0.0/16"
+ipv4_gateway = "10.74.0.1"
+allocation_key = "vortex-containers"
+preferred_display_id = 141
+ula_enabled = true
+reverse_dns = true
+
+[networks.vortex-containers.routing]
+from = "nexus"
+mode = "via-host"
+via = "vortex"
