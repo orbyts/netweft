@@ -4,6 +4,7 @@ use anyhow::{Result, bail};
 
 use crate::model::{ConfigBundle, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy};
 use crate::plan::dns_access::derive_dns_access;
+use crate::plan::proxy::resolve_proxy_plan;
 
 #[derive(Debug, Default)]
 pub struct ValidationReport {
@@ -15,6 +16,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_location(bundle)?;
     validate_references(bundle)?;
     validate_addresses(bundle)?;
+    resolve_proxy_plan(bundle)?;
 
     if bundle.dns.dns.recursion.enabled {
         derive_dns_access(bundle)?;

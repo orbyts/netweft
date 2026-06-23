@@ -125,6 +125,9 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
 
         let domain = DomainName::new(&web.domain)
             .with_context(|| format!("service '{service_name}' has invalid proxy domain"))?;
+        if domain.as_str().starts_with("*.") {
+            bail!("service '{service_name}' cannot use a wildcard proxy domain");
+        }
         let tls = if web.tls {
             let certificate = match web.certificate.as_deref() {
                 Some(certificate_name) => {
@@ -180,10 +183,11 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
     }
 
     proxies.sort_by(|left, right| left.id.cmp(&right.id));
-    for pair in proxies.windows(2) {
-        for left_domain in &pair[0].domains {
-            if pair[1].domains.contains(left_domain) {
-                bail!("proxy domain '{left_domain}' is declared more than once");
+    let mut domains = std::collections::BTreeSet::new();
+    for proxy in &proxies {
+        for domain in &proxy.domains {
+            if !domains.insert(domain.clone()) {
+                bail!("proxy domain '{domain}' is declared more than once");
             }
         }
     }

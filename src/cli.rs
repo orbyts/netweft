@@ -62,6 +62,8 @@ pub enum ShowCommand {
     DnsAccess,
     /// Show the resolved DNS plan without generating files.
     Dns,
+    /// Show the provider-neutral reverse-proxy plan.
+    Proxy,
     /// Show the generated environment plan for a host.
     Env {
         #[arg(long)]

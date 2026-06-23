@@ -45,9 +45,10 @@ impl DomainName {
     pub fn new(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
         let normalized = value.trim_end_matches('.').to_ascii_lowercase();
-        let valid = !normalized.is_empty()
+        let labels = normalized.strip_prefix("*.").unwrap_or(&normalized);
+        let valid = !labels.is_empty()
             && normalized.len() <= 253
-            && normalized.split('.').all(|label| {
+            && labels.split('.').all(|label| {
                 !label.is_empty()
                     && label.len() <= 63
                     && !label.starts_with('-')
