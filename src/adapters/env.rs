@@ -12,14 +12,6 @@ const CAPABILITIES: &[Capability] = &[Capability::HostEnvironment];
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EnvironmentAdapter;
 
-impl EnvironmentAdapter {
-    fn target_host<'a, 'plan>(&self, context: &AdapterContext<'a, 'plan>) -> Result<&'a str> {
-        context
-            .target_host
-            .context("environment adapter requires a target host")
-    }
-}
-
 impl Adapter for EnvironmentAdapter {
     fn metadata(&self) -> AdapterMetadata {
         AdapterMetadata {
@@ -31,12 +23,16 @@ impl Adapter for EnvironmentAdapter {
     }
 
     fn validate(&self, context: &AdapterContext<'_, '_>) -> Result<()> {
-        let host = self.target_host(context)?;
+        let host = context
+            .target_host
+            .context("environment adapter requires a target host")?;
         context.plan.host_environment(host).map(|_| ())
     }
 
     fn render(&self, context: &AdapterContext<'_, '_>) -> Result<AdapterOutput> {
-        let host = self.target_host(context)?;
+        let host = context
+            .target_host
+            .context("environment adapter requires a target host")?;
         let plan = context.plan.host_environment(host)?;
         let root = render_env(&plan, context.plan.paths())?;
 

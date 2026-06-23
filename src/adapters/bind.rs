@@ -43,7 +43,12 @@ impl Adapter for BindAdapter {
         Ok(AdapterOutput {
             adapter: self.metadata().id,
             root,
-            target_host: Some(context.plan.config().dns.dns.service.clone()),
+            target_host: Some(
+                context.plan.config().services.services
+                    [&context.plan.config().dns.dns.service]
+                    .host
+                    .clone(),
+            ),
             artifacts,
         })
     }
