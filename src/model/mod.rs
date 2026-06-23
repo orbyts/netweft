@@ -149,7 +149,18 @@ pub enum NetworkKind {
 #[serde(deny_unknown_fields)]
 pub struct ServicesFile {
     pub schema_version: u32,
+    #[serde(default)]
+    pub certificates: BTreeMap<String, CertificateReference>,
     pub services: BTreeMap<String, Service>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CertificateReference {
+    #[serde(default)]
+    pub domains: Vec<String>,
+    pub certificate_path: String,
+    pub private_key_path: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -232,7 +243,22 @@ pub struct WebService {
     pub access: String,
     pub proxy: String,
     #[serde(default)]
+    pub scheme: UpstreamScheme,
+    #[serde(default)]
     pub tls: bool,
+    pub certificate: Option<String>,
+    #[serde(default)]
+    pub force_https: bool,
+    #[serde(default)]
+    pub websocket: bool,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum UpstreamScheme {
+    #[default]
+    Http,
+    Https,
 }
 
 #[derive(Debug, Deserialize)]
