@@ -1,0 +1,11 @@
+schema_version = 1
+
+[ula]
+prefix = "fdd7:d134:61e3::/48"
+
+[ula.segments]
+main = 256
+
+[ula.networks]
+nexus-containers = 289
+vortex-containers = 321
