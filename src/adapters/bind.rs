@@ -6,10 +6,7 @@ use crate::adapter::{
 };
 use crate::render::bind::render_bind;
 
-const CAPABILITIES: &[Capability] = &[
-    Capability::AuthoritativeDns,
-    Capability::RecursiveDns,
-];
+const CAPABILITIES: &[Capability] = &[Capability::AuthoritativeDns, Capability::RecursiveDns];
 
 /// Official BIND 9 configuration adapter.
 #[derive(Debug, Default, Clone, Copy)]
@@ -44,8 +41,7 @@ impl Adapter for BindAdapter {
             adapter: self.metadata().id,
             root,
             target_host: Some(
-                context.plan.config().services.services
-                    [&context.plan.config().dns.dns.service]
+                context.plan.config().services.services[&context.plan.config().dns.dns.service]
                     .host
                     .clone(),
             ),

@@ -18,8 +18,8 @@ pub fn collect_artifacts(root: &Path) -> Result<Vec<Artifact>> {
 }
 
 fn collect(root: &Path, current: &Path, artifacts: &mut Vec<Artifact>) -> Result<()> {
-    for entry in fs::read_dir(current)
-        .with_context(|| format!("failed to inspect {}", current.display()))?
+    for entry in
+        fs::read_dir(current).with_context(|| format!("failed to inspect {}", current.display()))?
     {
         let entry = entry?;
         let path = entry.path();

@@ -5,10 +5,10 @@ use netweft::adapters::builtin_registry;
 use netweft::cli::{AdapterCommand, Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
-use netweft::resolve::ResolvedPlan;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
+use netweft::resolve::ResolvedPlan;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -91,16 +91,12 @@ fn main() -> Result<()> {
                     println!("Rendered BIND configuration: {}", rendered.root.display());
                 }
                 RenderCommand::Env { host } => {
-                    let rendered = registry
-                        .get("env")?
-                        .render(&context.for_host(&host))?;
+                    let rendered = registry.get("env")?.render(&context.for_host(&host))?;
                     println!("Rendered host environment: {}", rendered.root.display());
                 }
                 RenderCommand::All { host } => {
                     let bind = registry.get("bind")?.render(&context)?;
-                    let env = registry
-                        .get("env")?
-                        .render(&context.for_host(&host))?;
+                    let env = registry.get("env")?.render(&context.for_host(&host))?;
                     println!("Rendered BIND configuration: {}", bind.root.display());
                     println!("Rendered host environment: {}", env.root.display());
                 }

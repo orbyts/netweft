@@ -7,8 +7,7 @@ use netweft::paths::NetweftPaths;
 use netweft::resolve::ResolvedPlan;
 
 fn fixture_config() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/shane-xfinity/config")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shane-xfinity/config")
 }
 
 #[test]

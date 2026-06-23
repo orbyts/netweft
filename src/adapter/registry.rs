@@ -29,9 +29,7 @@ impl AdapterRegistry {
     pub fn get(&self, id: &str) -> Result<&dyn Adapter> {
         self.adapters
             .iter()
-            .find_map(|(candidate, adapter)| {
-                (candidate.as_str() == id).then_some(adapter.as_ref())
-            })
+            .find_map(|(candidate, adapter)| (candidate.as_str() == id).then_some(adapter.as_ref()))
             .ok_or_else(|| anyhow::anyhow!("unknown adapter '{id}'"))
     }
 
