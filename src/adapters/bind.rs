@@ -3,7 +3,6 @@ use anyhow::Result;
 use crate::adapter::{
     Adapter, AdapterContext, AdapterId, AdapterMetadata, AdapterOutput, Capability,
 };
-use crate::plan::dns::resolve_dns_plan;
 use crate::render::bind::render_bind;
 
 const CAPABILITIES: &[Capability] = &[
@@ -25,16 +24,17 @@ impl Adapter for BindAdapter {
         }
     }
 
-    fn validate(&self, context: &AdapterContext<'_>) -> Result<()> {
-        resolve_dns_plan(context.bundle).map(|_| ())
+    fn validate(&self, context: &AdapterContext<'_, '_>) -> Result<()> {
+        context.plan.dns().map(|_| ())
     }
 
-    fn render(&self, context: &AdapterContext<'_>) -> Result<AdapterOutput> {
-        let plan = resolve_dns_plan(context.bundle)?;
+    fn render(&self, context: &AdapterContext<'_, '_>) -> Result<AdapterOutput> {
+        let plan = context.plan.dns()?;
         let output = context
-            .paths
+            .plan
+            .paths()
             .generated_dir
-            .join(&context.bundle.location.name)
+            .join(&context.plan.config().location.name)
             .join("bind");
         let root = render_bind(&plan, &output)?;
 

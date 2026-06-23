@@ -7,4 +7,5 @@ pub mod observe;
 pub mod paths;
 pub mod plan;
 pub mod render;
+pub mod resolve;
 pub mod validate;

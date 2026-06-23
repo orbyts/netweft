@@ -5,6 +5,7 @@ use netweft::adapters::builtin_registry;
 use netweft::cli::{AdapterCommand, Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
+use netweft::resolve::ResolvedPlan;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
@@ -81,7 +82,8 @@ fn main() -> Result<()> {
             let bundle = ConfigLoader::new(&paths.config_dir).load(None)?;
             bundle.validate()?;
             let registry = builtin_registry()?;
-            let context = AdapterContext::new(&bundle, &paths);
+            let plan = ResolvedPlan::new(&bundle, &paths);
+            let context = AdapterContext::new(&plan);
 
             match command {
                 RenderCommand::Bind => {

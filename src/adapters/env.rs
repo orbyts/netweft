@@ -3,7 +3,6 @@ use anyhow::{Context, Result};
 use crate::adapter::{
     Adapter, AdapterContext, AdapterId, AdapterMetadata, AdapterOutput, Capability,
 };
-use crate::plan::env::resolve_env_plan;
 use crate::render::env::render_env;
 
 const CAPABILITIES: &[Capability] = &[Capability::HostEnvironment];
@@ -13,7 +12,7 @@ const CAPABILITIES: &[Capability] = &[Capability::HostEnvironment];
 pub struct EnvironmentAdapter;
 
 impl EnvironmentAdapter {
-    fn target_host<'a>(&self, context: &'a AdapterContext<'_>) -> Result<&'a str> {
+    fn target_host<'a, 'plan>(&self, context: &AdapterContext<'a, 'plan>) -> Result<&'a str> {
         context
             .target_host
             .context("environment adapter requires a target host")
@@ -30,15 +29,15 @@ impl Adapter for EnvironmentAdapter {
         }
     }
 
-    fn validate(&self, context: &AdapterContext<'_>) -> Result<()> {
+    fn validate(&self, context: &AdapterContext<'_, '_>) -> Result<()> {
         let host = self.target_host(context)?;
-        resolve_env_plan(context.bundle, context.paths, host).map(|_| ())
+        context.plan.host_environment(host).map(|_| ())
     }
 
-    fn render(&self, context: &AdapterContext<'_>) -> Result<AdapterOutput> {
+    fn render(&self, context: &AdapterContext<'_, '_>) -> Result<AdapterOutput> {
         let host = self.target_host(context)?;
-        let plan = resolve_env_plan(context.bundle, context.paths, host)?;
-        let root = render_env(&plan, context.paths)?;
+        let plan = context.plan.host_environment(host)?;
+        let root = render_env(&plan, context.plan.paths())?;
 
         Ok(AdapterOutput {
             adapter: self.metadata().id,

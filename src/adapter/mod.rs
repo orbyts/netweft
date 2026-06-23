@@ -10,8 +10,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 
-use crate::model::ConfigBundle;
-use crate::paths::NetweftPaths;
+use crate::resolve::ResolvedPlan;
 
 /// Stable identifier for an adapter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -57,17 +56,15 @@ pub struct AdapterMetadata {
 
 /// Shared input available to every render adapter.
 #[derive(Debug, Clone, Copy)]
-pub struct AdapterContext<'a> {
-    pub bundle: &'a ConfigBundle,
-    pub paths: &'a NetweftPaths,
+pub struct AdapterContext<'a, 'plan> {
+    pub plan: &'a ResolvedPlan<'plan>,
     pub target_host: Option<&'a str>,
 }
 
-impl<'a> AdapterContext<'a> {
-    pub const fn new(bundle: &'a ConfigBundle, paths: &'a NetweftPaths) -> Self {
+impl<'a, 'plan> AdapterContext<'a, 'plan> {
+    pub const fn new(plan: &'a ResolvedPlan<'plan>) -> Self {
         Self {
-            bundle,
-            paths,
+            plan,
             target_host: None,
         }
     }
@@ -90,8 +87,8 @@ pub trait Adapter: Send + Sync {
     fn metadata(&self) -> AdapterMetadata;
 
     /// Validate adapter-specific requirements without rendering artifacts.
-    fn validate(&self, context: &AdapterContext<'_>) -> Result<()>;
+    fn validate(&self, context: &AdapterContext<'_, '_>) -> Result<()>;
 
     /// Render artifacts for this adapter.
-    fn render(&self, context: &AdapterContext<'_>) -> Result<AdapterOutput>;
+    fn render(&self, context: &AdapterContext<'_, '_>) -> Result<AdapterOutput>;
 }

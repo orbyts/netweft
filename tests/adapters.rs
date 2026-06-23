@@ -4,6 +4,7 @@ use netweft::adapter::{AdapterContext, Capability};
 use netweft::adapters::builtin_registry;
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
+use netweft::resolve::ResolvedPlan;
 
 fn fixture_config() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -40,7 +41,8 @@ fn adapters_validate_against_current_configuration() {
         cache_dir: std::env::temp_dir().join("netweft-adapter-test/cache"),
     };
     let registry = builtin_registry().unwrap();
-    let context = AdapterContext::new(&bundle, &paths);
+    let plan = ResolvedPlan::new(&bundle, &paths);
+    let context = AdapterContext::new(&plan);
 
     registry.get("bind").unwrap().validate(&context).unwrap();
     registry
