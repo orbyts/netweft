@@ -1,13 +1,13 @@
 use anyhow::Result;
 use clap::Parser;
+use netweft::adapter::AdapterContext;
+use netweft::adapters::builtin_registry;
 use netweft::cli::{Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
-use netweft::render::bind::render_bind;
-use netweft::render::env::render_env;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -69,27 +69,27 @@ fn main() -> Result<()> {
         Command::Render { command } => {
             let bundle = ConfigLoader::new(&paths.config_dir).load(None)?;
             bundle.validate()?;
+            let registry = builtin_registry()?;
+            let context = AdapterContext::new(&bundle, &paths);
 
             match command {
                 RenderCommand::Bind => {
-                    let plan = resolve_dns_plan(&bundle)?;
-                    let output = paths.generated_dir.join(&bundle.location.name).join("bind");
-                    let rendered = render_bind(&plan, &output)?;
-                    println!("Rendered BIND configuration: {}", rendered.display());
+                    let rendered = registry.get("bind")?.render(&context)?;
+                    println!("Rendered BIND configuration: {}", rendered.root.display());
                 }
                 RenderCommand::Env { host } => {
-                    let plan = resolve_env_plan(&bundle, &paths, &host)?;
-                    let rendered = render_env(&plan, &paths)?;
-                    println!("Rendered host environment: {}", rendered.display());
+                    let rendered = registry
+                        .get("env")?
+                        .render(&context.for_host(&host))?;
+                    println!("Rendered host environment: {}", rendered.root.display());
                 }
                 RenderCommand::All { host } => {
-                    let dns = resolve_dns_plan(&bundle)?;
-                    let bind_output = paths.generated_dir.join(&bundle.location.name).join("bind");
-                    render_bind(&dns, &bind_output)?;
-                    let env = resolve_env_plan(&bundle, &paths, &host)?;
-                    let env_output = render_env(&env, &paths)?;
-                    println!("Rendered BIND configuration: {}", bind_output.display());
-                    println!("Rendered host environment: {}", env_output.display());
+                    let bind = registry.get("bind")?.render(&context)?;
+                    let env = registry
+                        .get("env")?
+                        .render(&context.for_host(&host))?;
+                    println!("Rendered BIND configuration: {}", bind.root.display());
+                    println!("Rendered host environment: {}", env.root.display());
                 }
             }
         }
