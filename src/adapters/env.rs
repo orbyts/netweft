@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 
+use crate::adapter::artifact::collect_artifacts;
 use crate::adapter::{
     Adapter, AdapterContext, AdapterId, AdapterMetadata, AdapterOutput, Capability,
 };
@@ -39,9 +40,12 @@ impl Adapter for EnvironmentAdapter {
         let plan = context.plan.host_environment(host)?;
         let root = render_env(&plan, context.plan.paths())?;
 
+        let artifacts = collect_artifacts(&root)?;
         Ok(AdapterOutput {
             adapter: self.metadata().id,
             root,
+            target_host: Some(host.to_owned()),
+            artifacts,
         })
     }
 }

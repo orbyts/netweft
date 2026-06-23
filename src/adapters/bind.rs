@@ -1,5 +1,6 @@
 use anyhow::Result;
 
+use crate::adapter::artifact::collect_artifacts;
 use crate::adapter::{
     Adapter, AdapterContext, AdapterId, AdapterMetadata, AdapterOutput, Capability,
 };
@@ -38,9 +39,12 @@ impl Adapter for BindAdapter {
             .join("bind");
         let root = render_bind(&plan, &output)?;
 
+        let artifacts = collect_artifacts(&root)?;
         Ok(AdapterOutput {
             adapter: self.metadata().id,
             root,
+            target_host: Some(context.plan.config().dns.dns.service.clone()),
+            artifacts,
         })
     }
 }

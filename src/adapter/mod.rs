@@ -4,9 +4,12 @@
 //! emit tool-specific artifacts. The first SDK version keeps deployment
 //! explicit: adapters render files, but do not apply them to remote systems.
 
+pub mod artifact;
 pub mod registry;
 
 use std::path::PathBuf;
+
+use artifact::Artifact;
 
 use anyhow::Result;
 
@@ -80,6 +83,8 @@ impl<'a, 'plan> AdapterContext<'a, 'plan> {
 pub struct AdapterOutput {
     pub adapter: AdapterId,
     pub root: PathBuf,
+    pub target_host: Option<String>,
+    pub artifacts: Vec<Artifact>,
 }
 
 /// Public interface implemented by built-in and downstream Rust adapters.
