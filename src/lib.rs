@@ -3,6 +3,7 @@ pub mod adapters;
 pub mod cli;
 pub mod config;
 pub mod model;
+pub mod observe;
 pub mod paths;
 pub mod plan;
 pub mod render;
