@@ -107,7 +107,7 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
             .services
             .get(&web.proxy)
             .with_context(|| format!("service '{service_name}' references unknown proxy service '{}'", web.proxy))?;
-        if !matches!(proxy_service.kind, ServiceKind::ReverseProxy) {
+        if !matches!(&proxy_service.kind, ServiceKind::ReverseProxy) {
             bail!("service '{service_name}' references '{}' as a proxy, but it is not a reverse-proxy service", web.proxy);
         }
         if !proxy_service.enabled {
@@ -137,7 +137,7 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
                     let domains = reference
                         .domains
                         .iter()
-                        .map(DomainName::new)
+                        .map(|domain| DomainName::new(domain.as_str()))
                         .collect::<Result<Vec<_>>>()?;
                     if !domains.iter().any(|covered| domain_matches(covered, &domain)) {
                         bail!("certificate '{certificate_name}' does not cover domain '{domain}'");
