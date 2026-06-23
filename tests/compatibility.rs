@@ -9,8 +9,7 @@ use netweft::plan::env::resolve_env_plan;
 use netweft::render::bind::render_bind;
 
 fn fixture_config() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/shane-xfinity/config")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shane-xfinity/config")
 }
 
 fn temp_root(name: &str) -> PathBuf {
@@ -48,8 +47,14 @@ fn current_configuration_preserves_resolved_behavior() {
         name: "ds1621plus.suhail.ink.".to_owned(),
         address: "10.214.90.20".parse().unwrap(),
     }));
-    assert!(primary.records.contains(&ResolvedRecord::A {
-        name: "nginx.suhail.ink.".to_owned(),
+    let life = dns
+        .zones
+        .iter()
+        .find(|zone| zone.name == "suhail.life")
+        .unwrap();
+
+    assert!(life.records.contains(&ResolvedRecord::A {
+        name: "family.suhail.life.".to_owned(),
         address: "10.214.90.10".parse().unwrap(),
     }));
 }
