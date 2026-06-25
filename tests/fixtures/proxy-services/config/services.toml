@@ -110,9 +110,6 @@ host = "ds1621plus"
 network = "nexus-containers"
 enabled = true
 
-[services.dsm.address]
-ipv4 = "10.214.90.20"
-
 [services.dsm.web]
 container_port = 5001
 domain = "dsm.suhail.ink"

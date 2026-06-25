@@ -75,7 +75,12 @@ impl ResolvedProxyPlan {
             println!(
                 "{}\tdomains={}\tlisteners={}\tupstream={}://{}:{}\tproxy={}\thost={}\twebsocket={}",
                 proxy.id,
-                proxy.domains.iter().map(ToString::to_string).collect::<Vec<_>>().join(","),
+                proxy
+                    .domains
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(","),
                 listeners,
                 proxy.upstream.scheme,
                 proxy.upstream.address,
@@ -99,26 +104,49 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
             continue;
         }
         if web.access != "reverse-proxy" {
-            bail!("service '{service_name}' has unsupported web access '{}'", web.access);
+            bail!(
+                "service '{service_name}' has unsupported web access '{}'",
+                web.access
+            );
         }
 
-        let proxy_service = bundle
-            .services
-            .services
-            .get(&web.proxy)
-            .with_context(|| format!("service '{service_name}' references unknown proxy service '{}'", web.proxy))?;
+        let proxy_service = bundle.services.services.get(&web.proxy).with_context(|| {
+            format!(
+                "service '{service_name}' references unknown proxy service '{}'",
+                web.proxy
+            )
+        })?;
         if !matches!(&proxy_service.kind, ServiceKind::ReverseProxy) {
-            bail!("service '{service_name}' references '{}' as a proxy, but it is not a reverse-proxy service", web.proxy);
+            bail!(
+                "service '{service_name}' references '{}' as a proxy, but it is not a reverse-proxy service",
+                web.proxy
+            );
         }
         if !proxy_service.enabled {
-            bail!("service '{service_name}' references disabled proxy service '{}'", web.proxy);
+            bail!(
+                "service '{service_name}' references disabled proxy service '{}'",
+                web.proxy
+            );
         }
 
         let address = service
             .address
             .as_ref()
             .and_then(|address| address.ipv4)
-            .with_context(|| format!("proxied service '{service_name}' requires an IPv4 address"))?;
+            .or_else(|| {
+                bundle.location.hosts.get(&service.host).and_then(|host| {
+                    host.interfaces
+                        .values()
+                        .find_map(|interface| interface.ipv4)
+                })
+            })
+            .with_context(|| {
+                format!(
+                    "proxied service '{service_name}' requires either a service IPv4 address \
+                     or an IPv4 address on host '{}'",
+                    service.host
+                )
+            })?;
         if web.container_port == 0 {
             bail!("proxied service '{service_name}' uses invalid upstream port 0");
         }
@@ -139,14 +167,23 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
                         .iter()
                         .map(|domain| DomainName::new(domain.as_str()))
                         .collect::<Result<Vec<_>>>()?;
-                    if !domains.iter().any(|covered| domain_matches(covered, &domain)) {
+                    if !domains
+                        .iter()
+                        .any(|covered| domain_matches(covered, &domain))
+                    {
                         bail!("certificate '{certificate_name}' does not cover domain '{domain}'");
                     }
                     Some(ResolvedCertificate {
                         id: CertificateId::new(certificate_name)?,
                         domains,
-                        certificate_path: absolute_path(&reference.certificate_path, certificate_name)?,
-                        private_key_path: absolute_path(&reference.private_key_path, certificate_name)?,
+                        certificate_path: absolute_path(
+                            &reference.certificate_path,
+                            certificate_name,
+                        )?,
+                        private_key_path: absolute_path(
+                            &reference.private_key_path,
+                            certificate_name,
+                        )?,
                     })
                 }
                 None => None,
@@ -169,7 +206,11 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
             target_host: HostId::new(&proxy_service.host)?,
             domains: vec![domain],
             listeners: vec![ResolvedListener {
-                protocol: if web.tls { ListenerProtocol::Https } else { ListenerProtocol::Http },
+                protocol: if web.tls {
+                    ListenerProtocol::Https
+                } else {
+                    ListenerProtocol::Http
+                },
                 port: if web.tls { 443 } else { 80 },
             }],
             upstream: ResolvedUpstream {
@@ -198,7 +239,10 @@ pub fn resolve_proxy_plan(bundle: &ConfigBundle) -> Result<ResolvedProxyPlan> {
 fn absolute_path(value: &str, certificate: &str) -> Result<PathBuf> {
     let path = PathBuf::from(value);
     if !path.is_absolute() {
-        bail!("certificate '{certificate}' path '{}' must be absolute", path.display());
+        bail!(
+            "certificate '{certificate}' path '{}' must be absolute",
+            path.display()
+        );
     }
     Ok(path)
 }
@@ -207,10 +251,14 @@ fn domain_matches(covered: &DomainName, requested: &DomainName) -> bool {
     if covered == requested {
         return true;
     }
-    covered
-        .as_str()
-        .strip_prefix("*.")
-        .is_some_and(|suffix| requested.as_str().strip_suffix(suffix).is_some_and(|prefix| prefix.ends_with('.') && !prefix[..prefix.len() - 1].contains('.')))
+    covered.as_str().strip_prefix("*.").is_some_and(|suffix| {
+        requested
+            .as_str()
+            .strip_suffix(suffix)
+            .is_some_and(|prefix| {
+                prefix.ends_with('.') && !prefix[..prefix.len() - 1].contains('.')
+            })
+    })
 }
 
 impl std::fmt::Display for ListenerProtocol {

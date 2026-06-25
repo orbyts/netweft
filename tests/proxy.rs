@@ -53,8 +53,8 @@ fn resolves_container_and_cross_host_proxy_intent() {
 
 #[test]
 fn legacy_tls_intent_remains_valid_without_certificate_reference() {
-    let config = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/shane-xfinity/config");
+    let config =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shane-xfinity/config");
     let bundle = ConfigLoader::new(&config).load(None).unwrap();
 
     bundle.validate().unwrap();

@@ -11,9 +11,9 @@ macro_rules! string_id {
             pub fn new(value: impl Into<String>) -> Result<Self> {
                 let value = value.into();
                 if value.is_empty()
-                    || !value
-                        .chars()
-                        .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'))
+                    || !value.chars().all(|character| {
+                        character.is_ascii_alphanumeric() || matches!(character, '-' | '_')
+                    })
                 {
                     bail!("invalid {} identifier '{}'", $label, value);
                 }
