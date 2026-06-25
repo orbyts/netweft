@@ -1,20 +1,13 @@
-# Applying the Netweft proxy-model patch series
+# Apply the native Nginx adapter patch series
 
-## Preconditions
-
-- Start from commit `0c74b58b520559c4cd38c8299b7199c553df493d` on `feature/proxy-model`.
-- Keep the working tree clean, or commit/stash local work first.
-- Review every patch before applying it.
-
-## Apply patches
+Apply from a clean `feature/nginx-adapter` branch based on commit
+`90ceddee7c55ec3a823dc9e28eff7dd4b16f3640`:
 
 ```bash
-tar -xzf netweft-proxy-model-patch-series.tar.gz
-cd netweft-proxy-model-patch-series
 git am patches/*.patch
 ```
 
-## Verify
+Verify:
 
 ```bash
 cargo fmt --all -- --check
@@ -24,15 +17,11 @@ cargo test --all-targets
 git diff --check
 ```
 
-Inspect the resolved plan with a configuration that declares proxy intent:
+Inspect without deployment:
 
 ```bash
-netweft validate
-netweft show proxy
+cargo run -- adapters list
+cargo run -- --config-dir tests/fixtures/proxy-services/config render nginx --host nexus
 ```
 
-This phase does not render Nginx configuration, restart containers, issue certificates, or modify live deployment files.
-
-## Fallback archive
-
-The companion patched-source archive contains the complete source tree after the patch series, excluding `.git` and build output. It can be compared against an applied tree or used as a clean fallback copy.
+No container or running service is changed by this patch series.
