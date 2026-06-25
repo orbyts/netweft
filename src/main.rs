@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use netweft::adapter::AdapterContext;
 use netweft::adapters::builtin_registry;
+use netweft::adapters::nginx::validate_nginx_config;
 use netweft::cli::{AdapterCommand, Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
@@ -94,6 +95,18 @@ fn main() -> Result<()> {
                 RenderCommand::Bind => {
                     let rendered = registry.get("bind")?.render(&context)?;
                     println!("Rendered BIND configuration: {}", rendered.root.display());
+                }
+                RenderCommand::Nginx { host, check, nginx } => {
+                    let context = match host.as_deref() {
+                        Some(host) => context.for_host(host),
+                        None => context,
+                    };
+                    let rendered = registry.get("nginx")?.render(&context)?;
+                    if check {
+                        validate_nginx_config(&rendered.root, &nginx)?;
+                        println!("Validated Nginx configuration with {}", nginx.display());
+                    }
+                    println!("Rendered Nginx configuration: {}", rendered.root.display());
                 }
                 RenderCommand::Env { host } => {
                     let rendered = registry.get("env")?.render(&context.for_host(&host))?;

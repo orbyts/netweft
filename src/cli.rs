@@ -75,6 +75,18 @@ pub enum ShowCommand {
 pub enum RenderCommand {
     /// Render a complete BIND configuration for the active location.
     Bind,
+    /// Render native Nginx reverse-proxy configuration.
+    Nginx {
+        /// Restrict rendering to proxies deployed on this host.
+        #[arg(long)]
+        host: Option<String>,
+        /// Run nginx -t after rendering.
+        #[arg(long)]
+        check: bool,
+        /// Nginx executable used by --check.
+        #[arg(long, default_value = "nginx")]
+        nginx: PathBuf,
+    },
     /// Render Docker Compose and shell environment files for a host.
     Env {
         #[arg(long)]
