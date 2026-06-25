@@ -1,0 +1,3 @@
+adapter=nginx
+proxy=dsm target_host=nexus upstream=https://10.214.90.20:5001
+proxy=jellyfin target_host=nexus upstream=http://10.74.1.10:8096
