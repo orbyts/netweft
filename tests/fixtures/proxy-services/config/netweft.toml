@@ -1,0 +1,18 @@
+schema_version = 1
+active_location = "shane-xfinity"
+
+[paths]
+generated_root = "~/.local/share/netweft/generated"
+state_root = "~/.local/state/netweft"
+cache_root = "~/.cache/netweft"
+
+[render]
+atomic = true
+stable_order = true
+generated_headers = true
+
+[validation]
+warn_dynamic_ipv6 = true
+warn_dropbox_runtime = true
+warn_latest_images = true
+deny_warnings = false
