@@ -11,14 +11,14 @@ fn fixture_config() -> PathBuf {
 }
 
 #[test]
-fn builtin_registry_exposes_bind_and_environment_adapters() {
+fn builtin_registry_exposes_official_adapters() {
     let registry = builtin_registry().unwrap();
     let ids: Vec<_> = registry
         .iter()
         .map(|adapter| adapter.metadata().id.as_str())
         .collect();
 
-    assert_eq!(ids, vec!["bind", "env"]);
+    assert_eq!(ids, vec!["bind", "env", "nginx"]);
     assert!(
         registry
             .get("bind")
