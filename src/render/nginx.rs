@@ -21,7 +21,9 @@ pub fn render_nginx(plan: &ResolvedProxyPlan, output: &Path) -> Result<PathBuf> 
     for proxy in &plan.proxies {
         for domain in &proxy.domains {
             write(
-                &temp.join("conf.d").join(format!("{}.conf", domain.as_str())),
+                &temp
+                    .join("conf.d")
+                    .join(format!("{}.conf", domain.as_str())),
                 &render_server(proxy, domain.as_str())?,
             )?;
         }

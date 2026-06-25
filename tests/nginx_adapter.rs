@@ -87,8 +87,8 @@ fn assert_fixture(actual: &Path, relative: &str) {
 
 #[test]
 fn rejects_tls_rendering_without_a_certificate_reference() {
-    let config = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/shane-xfinity/config");
+    let config =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shane-xfinity/config");
     let mut paths = test_paths("nginx-missing-certificate");
     paths.config_dir = config.clone();
     let bundle = ConfigLoader::new(&config).load(None).unwrap();
