@@ -82,8 +82,65 @@ pub struct Host {
     pub parent: Option<String>,
     pub runtime_root: Option<String>,
     pub ssh_user: Option<String>,
+    #[serde(default)]
+    pub network: Option<HostNetworkConfig>,
     #[serde(default = "default_true")]
     pub enabled: bool,
+}
+
+/// Stable operating-system network topology attached to a host.
+///
+/// Addresses and gateways remain location-specific. This structure describes
+/// host properties that normally travel with the machine: physical links,
+/// bridges, and the operating-system network provider.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostNetworkConfig {
+    pub provider: HostNetworkProvider,
+    pub management_interface: String,
+    #[serde(default)]
+    pub preserve_includes: bool,
+    #[serde(default)]
+    pub links: Vec<HostNetworkLink>,
+    #[serde(default)]
+    pub bridges: Vec<HostNetworkBridge>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostNetworkProvider {
+    ProxmoxIfupdown2,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostNetworkLink {
+    pub name: String,
+    pub kind: HostNetworkLinkKind,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostNetworkLinkKind {
+    Ethernet,
+    Wifi,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostNetworkBridge {
+    pub name: String,
+    #[serde(default)]
+    pub ports: Vec<String>,
+    pub location_interface: Option<String>,
+    #[serde(default)]
+    pub vlan_aware: bool,
+    pub allowed_vlans: Option<String>,
+    #[serde(default)]
+    pub stp: bool,
+    #[serde(default)]
+    pub forward_delay: u32,
+    pub comment: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
