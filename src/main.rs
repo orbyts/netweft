@@ -9,6 +9,7 @@ use netweft::paths::NetweftPaths;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
+use netweft::plan::host_network::resolve_host_network_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
 use netweft::resolve::ResolvedPlan;
 
@@ -69,6 +70,10 @@ fn main() -> Result<()> {
                 }
                 ShowCommand::Env { host } => {
                     let plan = resolve_env_plan(&bundle, &paths, &host)?;
+                    plan.print();
+                }
+                ShowCommand::HostNetwork { host } => {
+                    let plan = resolve_host_network_plan(&bundle, &host)?;
                     plan.print();
                 }
             }

@@ -1,0 +1,58 @@
+schema_version = 1
+name = "shane-xfinity"
+description = "Shane's Xfinity XB8 network in San Francisco"
+
+[router]
+kind = "xfinity-xb8"
+managed = false
+supports_vlans = false
+
+[ipv6]
+mode = "router-advertised"
+prefix = "2601:645:8a02:6610::/64"
+stability = "dynamic"
+publish_public_aaaa = false
+
+[segments.main]
+kind = "lan"
+ipv4_cidr = "10.214.90.0/24"
+ipv4_gateway = "10.214.90.1"
+vlan_id = 0
+
+[hosts.nexus.interfaces.lan]
+segment = "main"
+ipv4 = "10.214.90.10"
+ipv6_mode = "slaac"
+ula_interface_id = "10"
+
+[hosts.eclipse.interfaces.wifi]
+segment = "main"
+ipv6_mode = "slaac"
+
+
+[hosts.zion.interfaces.lan]
+segment = "main"
+ipv4 = "10.214.90.30"
+ipv6_mode = "slaac"
+ula_interface_id = "30"
+
+[tailscale]
+enabled = true
+strategy = "subnet-router"
+primary_router = "nexus"
+
+[tailscale.routers.nexus]
+enabled = true
+snat_subnet_routes = true
+accept_routes = false
+exit_node = false
+advertise = [
+    "segment:main",
+    "network:nexus-containers",
+]
+
+[hosts.ds1621plus.interfaces.lan]
+segment = "main"
+ipv4 = "10.214.90.20"
+ipv6_mode = "slaac"
+ula_interface_id = "20"

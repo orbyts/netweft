@@ -69,6 +69,11 @@ pub enum ShowCommand {
         #[arg(long)]
         host: String,
     },
+    /// Show the resolved operating-system network plan for a host.
+    HostNetwork {
+        #[arg(long)]
+        host: String,
+    },
 }
 
 #[derive(Debug, Subcommand)]

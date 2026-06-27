@@ -1,0 +1,85 @@
+schema_version = 1
+
+[dns]
+provider = "bind9"
+service = "bind9"
+default_ttl = 86400
+negative_ttl = 604800
+
+[dns.soa]
+primary_nameserver = "ns1.suhail.ink."
+responsible_mailbox = "admin.suhail.ink."
+refresh = 86400
+retry = 7200
+expire = 3600000
+
+[dns.recursion]
+enabled = true
+include_location_segments = true
+include_tailscale = true
+include_ula = true
+include_docker_networks = true
+
+[dns.forwarders]
+ipv4 = ["1.1.1.1", "1.0.0.1"]
+ipv6 = ["2606:4700:4700::1111", "2606:4700:4700::1001"]
+
+[[zones]]
+name = "suhail.ink"
+visibility = "internal"
+authoritative = true
+
+[[zones]]
+name = "suhail.photos"
+visibility = "internal"
+authoritative = true
+
+[[zones]]
+name = "suhail.art"
+visibility = "internal"
+authoritative = true
+
+[[zones]]
+name = "suhail.life"
+visibility = "internal"
+authoritative = true
+
+[[records]]
+name = "nexus.suhail.ink"
+kind = "host"
+target = "nexus"
+interface = "lan"
+families = ["ipv4"]
+reverse = true
+
+[[records]]
+name = "bind9.internal.suhail.ink"
+kind = "service"
+target = "bind9"
+address_scope = "container"
+families = ["ipv4", "ipv6"]
+reverse = true
+
+[[records]]
+name = "nginx.internal.suhail.ink"
+kind = "service"
+target = "nginx"
+address_scope = "container"
+families = ["ipv4", "ipv6"]
+reverse = true
+
+[[records]]
+name = "family.suhail.life"
+kind = "service"
+target = "nginx"
+address_scope = "ingress"
+families = ["ipv4"]
+reverse = false
+
+[[records]]
+name = "ds1621plus.suhail.ink"
+kind = "host"
+target = "ds1621plus"
+interface = "lan"
+families = ["ipv4"]
+reverse = true
