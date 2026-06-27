@@ -42,7 +42,7 @@ fn resolves_zion_host_network_plan() {
     assert!(vmbr0.vlan_aware);
     assert_eq!(vmbr0.allowed_vlans.as_deref(), Some("2-4094"));
     assert!(!vmbr0.stp);
-    assert_eq!(vmbr0.forward_delay, 0);
+    assert_eq!(vmbr0.forward_delay, 2);
     assert_eq!(vmbr0.comment.as_deref(), Some("Primary"));
 
     let vmbr1 = plan
