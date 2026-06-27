@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::{Result, bail};
 
@@ -16,6 +16,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_location(bundle)?;
     validate_references(bundle)?;
     validate_addresses(bundle)?;
+    validate_host_networks(bundle)?;
     resolve_proxy_plan(bundle)?;
 
     if bundle.dns.dns.recursion.enabled {
@@ -465,6 +466,229 @@ fn validate_addresses(bundle: &ConfigBundle) -> Result<()> {
                 );
             }
         }
+    }
+
+    Ok(())
+}
+
+fn validate_host_networks(bundle: &ConfigBundle) -> Result<()> {
+    let mut static_ipv4_owners = BTreeMap::new();
+
+    for (host_name, host) in &bundle.inventory.hosts {
+        let Some(network) = &host.network else {
+            continue;
+        };
+
+        if !host.enabled {
+            continue;
+        }
+
+        let location_host = bundle.location.hosts.get(host_name).ok_or_else(|| {
+            anyhow::anyhow!(
+                "host '{host_name}' defines a network profile but is not attached to location '{}'",
+                bundle.location.name
+            )
+        })?;
+
+        let mut link_names = BTreeSet::new();
+
+        for link in &network.links {
+            if link.name.trim().is_empty() {
+                bail!("host '{host_name}' defines an empty network link name");
+            }
+
+            if !link_names.insert(link.name.as_str()) {
+                bail!(
+                    "host '{host_name}' defines duplicate network link '{}'",
+                    link.name
+                );
+            }
+        }
+
+        let mut bridge_names = BTreeSet::new();
+        let mut claimed_links: BTreeMap<&str, &str> = BTreeMap::new();
+        let mut management_bridge_count = 0usize;
+
+        for bridge in &network.bridges {
+            if bridge.name.trim().is_empty() {
+                bail!("host '{host_name}' defines an empty bridge name");
+            }
+
+            if !bridge_names.insert(bridge.name.as_str()) {
+                bail!(
+                    "host '{host_name}' defines duplicate bridge '{}'",
+                    bridge.name
+                );
+            }
+
+            if bridge.allowed_vlans.is_some() && !bridge.vlan_aware {
+                bail!(
+                    "host '{host_name}' bridge '{}' defines allowed_vlans but is not VLAN-aware",
+                    bridge.name
+                );
+            }
+
+            if let Some(vlans) = &bridge.allowed_vlans {
+                validate_vlan_expression(host_name, &bridge.name, vlans)?;
+            }
+
+            for port in &bridge.ports {
+                if !link_names.contains(port.as_str()) {
+                    bail!(
+                        "host '{host_name}' bridge '{}' references unknown link '{port}'",
+                        bridge.name
+                    );
+                }
+
+                if let Some(existing_bridge) =
+                    claimed_links.insert(port.as_str(), bridge.name.as_str())
+                {
+                    bail!(
+                        "host '{host_name}' link '{port}' is assigned to both bridge '{existing_bridge}' and bridge '{}'",
+                        bridge.name
+                    );
+                }
+            }
+
+            let Some(interface_name) = &bridge.location_interface else {
+                continue;
+            };
+
+            if interface_name == &network.management_interface {
+                management_bridge_count += 1;
+            }
+
+            let interface = location_host
+                .interfaces
+                .get(interface_name)
+                .ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "host '{host_name}' bridge '{}' references missing location interface '{interface_name}'",
+                        bridge.name
+                    )
+                })?;
+
+            let segment = bundle
+                .location
+                .segments
+                .get(&interface.segment)
+                .ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "host '{host_name}' interface '{interface_name}' references unknown segment '{}'",
+                        interface.segment
+                    )
+                })?;
+
+            if let Some(ipv4) = interface.ipv4 {
+                if ipv4 == segment.ipv4_gateway {
+                    bail!(
+                        "host '{host_name}' interface '{interface_name}' address {ipv4} conflicts with segment '{}' gateway",
+                        interface.segment
+                    );
+                }
+
+                if let Some((other_host, other_interface)) =
+                    static_ipv4_owners.insert(ipv4, (host_name.as_str(), interface_name.as_str()))
+                {
+                    bail!(
+                        "duplicate host IPv4 address {ipv4}: '{other_host}.{other_interface}' and '{host_name}.{interface_name}'"
+                    );
+                }
+            }
+
+            if matches!(
+                interface.ipv6_mode,
+                Some(crate::model::InterfaceIpv6Mode::Slaac)
+            ) && bundle.location.ipv6.mode == Ipv6Mode::Disabled
+            {
+                bail!(
+                    "host '{host_name}' interface '{interface_name}' requests SLAAC, but location '{}' disables IPv6",
+                    bundle.location.name
+                );
+            }
+        }
+
+        if management_bridge_count == 0 {
+            bail!(
+                "host '{host_name}' has no bridge attached to management interface '{}'",
+                network.management_interface
+            );
+        }
+
+        if management_bridge_count > 1 {
+            bail!(
+                "host '{host_name}' has multiple bridges attached to management interface '{}'",
+                network.management_interface
+            );
+        }
+
+        if !location_host
+            .interfaces
+            .contains_key(&network.management_interface)
+        {
+            bail!(
+                "host '{host_name}' management interface '{}' is not defined at location '{}'",
+                network.management_interface,
+                bundle.location.name
+            );
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_vlan_expression(host_name: &str, bridge_name: &str, expression: &str) -> Result<()> {
+    if expression.trim().is_empty() {
+        bail!("host '{host_name}' bridge '{bridge_name}' has an empty allowed_vlans value");
+    }
+
+    for item in expression.split(',') {
+        let item = item.trim();
+
+        if item.is_empty() {
+            bail!(
+                "host '{host_name}' bridge '{bridge_name}' has an invalid VLAN expression '{expression}'"
+            );
+        }
+
+        if let Some((start, end)) = item.split_once('-') {
+            let start: u16 = start.parse().map_err(|_| {
+                anyhow::anyhow!(
+                    "host '{host_name}' bridge '{bridge_name}' has invalid VLAN value '{item}'"
+                )
+            })?;
+
+            let end: u16 = end.parse().map_err(|_| {
+                anyhow::anyhow!(
+                    "host '{host_name}' bridge '{bridge_name}' has invalid VLAN value '{item}'"
+                )
+            })?;
+
+            validate_vlan_id(host_name, bridge_name, start)?;
+            validate_vlan_id(host_name, bridge_name, end)?;
+
+            if start > end {
+                bail!(
+                    "host '{host_name}' bridge '{bridge_name}' has descending VLAN range '{item}'"
+                );
+            }
+        } else {
+            let vlan: u16 = item.parse().map_err(|_| {
+                anyhow::anyhow!(
+                    "host '{host_name}' bridge '{bridge_name}' has invalid VLAN value '{item}'"
+                )
+            })?;
+
+            validate_vlan_id(host_name, bridge_name, vlan)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_vlan_id(host_name: &str, bridge_name: &str, vlan: u16) -> Result<()> {
+    if !(1..=4094).contains(&vlan) {
+        bail!("host '{host_name}' bridge '{bridge_name}' VLAN {vlan} is outside 1-4094");
     }
 
     Ok(())
