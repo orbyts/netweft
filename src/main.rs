@@ -117,6 +117,13 @@ fn main() -> Result<()> {
                     let rendered = registry.get("env")?.render(&context.for_host(&host))?;
                     println!("Rendered host environment: {}", rendered.root.display());
                 }
+                RenderCommand::Proxmox { host } => {
+                    let rendered = registry.get("proxmox")?.render(&context.for_host(&host))?;
+                    println!(
+                        "Rendered Proxmox configuration: {}",
+                        rendered.root.display()
+                    );
+                }
                 RenderCommand::All { host } => {
                     let bind = registry.get("bind")?.render(&context)?;
                     let env = registry.get("env")?.render(&context.for_host(&host))?;

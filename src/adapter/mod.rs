@@ -42,6 +42,7 @@ pub enum Capability {
     AuthoritativeDns,
     RecursiveDns,
     HostEnvironment,
+    HostNetworking,
     ReverseProxy,
     OverlayRouting,
     Firewall,

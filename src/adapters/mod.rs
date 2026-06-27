@@ -3,6 +3,7 @@
 pub mod bind;
 pub mod env;
 pub mod nginx;
+pub mod proxmox;
 
 use anyhow::Result;
 
@@ -14,5 +15,6 @@ pub fn builtin_registry() -> Result<AdapterRegistry> {
     registry.register(bind::BindAdapter)?;
     registry.register(env::EnvironmentAdapter)?;
     registry.register(nginx::NginxAdapter)?;
+    registry.register(proxmox::ProxmoxAdapter)?;
     Ok(registry)
 }

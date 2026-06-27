@@ -97,6 +97,11 @@ pub enum RenderCommand {
         #[arg(long)]
         host: String,
     },
+    /// Render Proxmox ifupdown2 host networking.
+    Proxmox {
+        #[arg(long)]
+        host: String,
+    },
     /// Render all artifacts for a host.
     All {
         #[arg(long)]

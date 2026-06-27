@@ -18,7 +18,7 @@ fn builtin_registry_exposes_official_adapters() {
         .map(|adapter| adapter.metadata().id.as_str())
         .collect();
 
-    assert_eq!(ids, vec!["bind", "env", "nginx"]);
+    assert_eq!(ids, vec!["bind", "env", "nginx", "proxmox"]);
     assert!(
         registry
             .get("bind")
@@ -26,6 +26,14 @@ fn builtin_registry_exposes_official_adapters() {
             .metadata()
             .capabilities
             .contains(&Capability::AuthoritativeDns)
+    );
+    assert!(
+        registry
+            .get("proxmox")
+            .unwrap()
+            .metadata()
+            .capabilities
+            .contains(&Capability::HostNetworking)
     );
 }
 

@@ -1,0 +1,9 @@
+adapter=proxmox
+host=zion
+location=shane-xfinity
+provider=proxmox-ifupdown2
+bridge=vmbr0 ports=enp3s0f1np1 ipv4=10.214.90.30/24 ipv6=slaac vlan_aware=true
+bridge=vmbr1 ports=none ipv4=none ipv6=disabled vlan_aware=true
+owns=etc/network/interfaces,etc/hosts,etc/resolv.conf
+preserves=etc/network/interfaces.d/*
+excludes=etc/network/interfaces.d/sdn,etc/pve/corosync.conf
