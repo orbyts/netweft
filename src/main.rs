@@ -9,7 +9,9 @@ use netweft::paths::NetweftPaths;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
+use netweft::plan::guest::resolve_guest_plan;
 use netweft::plan::host_network::resolve_host_network_plan;
+use netweft::plan::network_mount::resolve_network_mount_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
 use netweft::resolve::ResolvedPlan;
 
@@ -76,6 +78,12 @@ fn main() -> Result<()> {
                     let plan = resolve_host_network_plan(&bundle, &host)?;
                     plan.print();
                 }
+                ShowCommand::Guests => {
+                    resolve_guest_plan(&bundle)?.print();
+                }
+                ShowCommand::NetworkMounts { host } => {
+                    resolve_network_mount_plan(&bundle, &host)?.print();
+                }
             }
         }
         Command::Adapters { command } => {
@@ -121,6 +129,15 @@ fn main() -> Result<()> {
                     let rendered = registry.get("proxmox")?.render(&context.for_host(&host))?;
                     println!(
                         "Rendered Proxmox configuration: {}",
+                        rendered.root.display()
+                    );
+                }
+                RenderCommand::SystemdMounts { host } => {
+                    let rendered = registry
+                        .get("systemd-mounts")?
+                        .render(&context.for_host(&host))?;
+                    println!(
+                        "Rendered systemd network mounts: {}",
                         rendered.root.display()
                     );
                 }

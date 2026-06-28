@@ -18,7 +18,10 @@ fn builtin_registry_exposes_official_adapters() {
         .map(|adapter| adapter.metadata().id.as_str())
         .collect();
 
-    assert_eq!(ids, vec!["bind", "env", "nginx", "proxmox"]);
+    assert_eq!(
+        ids,
+        vec!["bind", "env", "nginx", "proxmox", "systemd-mounts"]
+    );
     assert!(
         registry
             .get("bind")

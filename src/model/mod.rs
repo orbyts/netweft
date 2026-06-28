@@ -439,6 +439,95 @@ pub enum AddressFamily {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct GuestsFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub guests: BTreeMap<String, Guest>,
+}
+
+impl Default for GuestsFile {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
+            guests: BTreeMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Guest {
+    pub kind: GuestKind,
+    pub host: String,
+    pub vmid: u32,
+    pub mac: String,
+    pub interface: String,
+    #[serde(default = "default_guest_bridge")]
+    pub bridge: String,
+    pub ipv4: Ipv4Addr,
+    pub address_mode: GuestAddressMode,
+    #[serde(default)]
+    pub onboot: bool,
+    pub startup: Option<String>,
+    #[serde(default)]
+    pub pci_devices: Vec<String>,
+    #[serde(default)]
+    pub virtiofs: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum GuestKind {
+    Vm,
+    Lxc,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum GuestAddressMode {
+    ReservedDhcp,
+    Static,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NetworkMountsFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub mounts: BTreeMap<String, NetworkMount>,
+}
+
+impl Default for NetworkMountsFile {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
+            mounts: BTreeMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NetworkMount {
+    pub host: String,
+    pub provider: NetworkMountProvider,
+    pub server_host: String,
+    pub export: String,
+    pub mount_path: String,
+    #[serde(default)]
+    pub options: Vec<String>,
+    #[serde(default)]
+    pub required_by: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum NetworkMountProvider {
+    Nfs,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AllocationsFile {
     pub schema_version: u32,
     pub ula: Option<UlaAllocations>,
@@ -588,6 +677,8 @@ pub struct ConfigBundle {
     pub inventory: InventoryFile,
     pub networks: NetworksFile,
     pub services: ServicesFile,
+    pub guests: GuestsFile,
+    pub mounts: NetworkMountsFile,
     pub dns: DnsFile,
     pub allocations: AllocationsFile,
     pub location: LocationFile,
@@ -659,6 +750,10 @@ pub fn parse_ip(value: &str) -> Result<IpAddr, std::net::AddrParseError> {
 
 fn default_true() -> bool {
     true
+}
+
+fn default_guest_bridge() -> String {
+    "vmbr0".to_owned()
 }
 
 fn default_ipv4_families() -> Vec<AddressFamily> {

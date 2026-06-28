@@ -11,7 +11,9 @@ use crate::observe::ObservationSet;
 use crate::paths::NetweftPaths;
 use crate::plan::dns::{ResolvedDnsPlan, resolve_dns_plan};
 use crate::plan::env::{ResolvedEnvPlan, resolve_env_plan};
+use crate::plan::guest::{ResolvedGuestPlan, resolve_guest_plan};
 use crate::plan::host_network::{ResolvedHostNetworkPlan, resolve_host_network_plan};
+use crate::plan::network_mount::{ResolvedNetworkMountPlan, resolve_network_mount_plan};
 use crate::plan::proxy::{ResolvedProxyPlan, resolve_proxy_plan};
 
 /// Shared resolution input for all adapters.
@@ -64,5 +66,13 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn host_network(&self, host: &str) -> Result<ResolvedHostNetworkPlan> {
         resolve_host_network_plan(self.config, host)
+    }
+
+    pub fn guests(&self) -> Result<ResolvedGuestPlan> {
+        resolve_guest_plan(self.config)
+    }
+
+    pub fn network_mounts(&self, host: &str) -> Result<ResolvedNetworkMountPlan> {
+        resolve_network_mount_plan(self.config, host)
     }
 }

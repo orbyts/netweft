@@ -4,6 +4,7 @@ pub mod bind;
 pub mod env;
 pub mod nginx;
 pub mod proxmox;
+pub mod systemd_mount;
 
 use anyhow::Result;
 
@@ -16,5 +17,6 @@ pub fn builtin_registry() -> Result<AdapterRegistry> {
     registry.register(env::EnvironmentAdapter)?;
     registry.register(nginx::NginxAdapter)?;
     registry.register(proxmox::ProxmoxAdapter)?;
+    registry.register(systemd_mount::SystemdMountAdapter)?;
     Ok(registry)
 }

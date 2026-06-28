@@ -17,6 +17,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_references(bundle)?;
     validate_addresses(bundle)?;
     validate_host_networks(bundle)?;
+    validate_guest_and_mount_references(bundle)?;
     resolve_proxy_plan(bundle)?;
 
     if bundle.dns.dns.recursion.enabled {
@@ -62,12 +63,71 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     Ok(report)
 }
 
+fn validate_guest_and_mount_references(bundle: &ConfigBundle) -> Result<()> {
+    let mut vmids = BTreeSet::new();
+    let mut macs = BTreeSet::new();
+    let mut addresses = BTreeSet::new();
+    let mut pci = BTreeMap::<String, String>::new();
+
+    for (name, guest) in &bundle.guests.guests {
+        if !bundle.inventory.hosts.contains_key(&guest.host) {
+            bail!(
+                "guest '{name}' references unknown parent host '{}'",
+                guest.host
+            );
+        }
+        if !vmids.insert((guest.host.clone(), guest.vmid)) {
+            bail!(
+                "guest '{name}' duplicates VMID {} on host '{}'",
+                guest.vmid,
+                guest.host
+            );
+        }
+        let mac = guest.mac.to_ascii_uppercase();
+        if !macs.insert(mac.clone()) {
+            bail!("guest '{name}' duplicates MAC '{mac}'");
+        }
+        if !addresses.insert(guest.ipv4) {
+            bail!("guest '{name}' duplicates IPv4 {}", guest.ipv4);
+        }
+        for device in &guest.pci_devices {
+            if let Some(owner) = pci.insert(device.clone(), name.clone()) {
+                bail!("guests '{owner}' and '{name}' both claim PCI device '{device}'");
+            }
+        }
+    }
+
+    for (id, mount) in &bundle.mounts.mounts {
+        if !bundle.inventory.hosts.contains_key(&mount.host) {
+            bail!(
+                "network mount '{id}' references unknown consumer host '{}'",
+                mount.host
+            );
+        }
+        if !bundle.inventory.hosts.contains_key(&mount.server_host) {
+            bail!(
+                "network mount '{id}' references unknown server host '{}'",
+                mount.server_host
+            );
+        }
+        if !mount.mount_path.starts_with('/') {
+            bail!(
+                "network mount '{id}' path '{}' must be absolute",
+                mount.mount_path
+            );
+        }
+    }
+    Ok(())
+}
+
 fn validate_schema_versions(bundle: &ConfigBundle) -> Result<()> {
     let versions = [
         ("netweft.toml", bundle.settings.schema_version),
         ("inventory.toml", bundle.inventory.schema_version),
         ("networks.toml", bundle.networks.schema_version),
         ("services.toml", bundle.services.schema_version),
+        ("guests.toml", bundle.guests.schema_version),
+        ("mounts.toml", bundle.mounts.schema_version),
         ("dns.toml", bundle.dns.schema_version),
         ("allocations.toml", bundle.allocations.schema_version),
         ("location", bundle.location.schema_version),

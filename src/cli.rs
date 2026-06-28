@@ -74,6 +74,13 @@ pub enum ShowCommand {
         #[arg(long)]
         host: String,
     },
+    /// Show resolved Proxmox VM/LXC guest identities and addresses.
+    Guests,
+    /// Show resolved network mounts for a host.
+    NetworkMounts {
+        #[arg(long)]
+        host: String,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -99,6 +106,11 @@ pub enum RenderCommand {
     },
     /// Render Proxmox ifupdown2 host networking.
     Proxmox {
+        #[arg(long)]
+        host: String,
+    },
+    /// Render systemd network mount units and service dependencies.
+    SystemdMounts {
         #[arg(long)]
         host: String,
     },

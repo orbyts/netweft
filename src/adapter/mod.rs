@@ -43,6 +43,7 @@ pub enum Capability {
     RecursiveDns,
     HostEnvironment,
     HostNetworking,
+    NetworkMounts,
     ReverseProxy,
     OverlayRouting,
     Firewall,

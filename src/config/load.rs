@@ -26,6 +26,8 @@ impl<'a> ConfigLoader<'a> {
             inventory: self.read("inventory.toml")?,
             networks: self.read("networks.toml")?,
             services: self.read("services.toml")?,
+            guests: self.read_optional("guests.toml")?,
+            mounts: self.read_optional("mounts.toml")?,
             dns: self.read("dns.toml")?,
             allocations: self.read("allocations.toml")?,
             location: self.read_path(&location_path)?,
@@ -34,6 +36,17 @@ impl<'a> ConfigLoader<'a> {
 
     fn read<T: DeserializeOwned>(&self, relative: &str) -> Result<T> {
         self.read_path(Path::new(relative))
+    }
+
+    fn read_optional<T>(&self, relative: &str) -> Result<T>
+    where
+        T: DeserializeOwned + Default,
+    {
+        let path = self.config_dir.join(relative);
+        if !path.exists() {
+            return Ok(T::default());
+        }
+        self.read(relative)
     }
 
     fn read_path<T: DeserializeOwned>(&self, relative: &Path) -> Result<T> {
