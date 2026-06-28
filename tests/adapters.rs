@@ -20,7 +20,15 @@ fn builtin_registry_exposes_official_adapters() {
 
     assert_eq!(
         ids,
-        vec!["bind", "env", "nginx", "proxmox", "systemd-mounts"]
+        vec![
+            "bind",
+            "env",
+            "nginx",
+            "proxmox",
+            "proxmox-storage",
+            "synology-nfs-permissions",
+            "systemd-mounts"
+        ]
     );
     assert!(
         registry

@@ -81,6 +81,16 @@ pub enum ShowCommand {
         #[arg(long)]
         host: String,
     },
+    /// Show resolved NAS-side network permissions.
+    NasPermissions {
+        #[arg(long)]
+        nas: Option<String>,
+    },
+    /// Show resolved Proxmox storage for a host.
+    ProxmoxStorage {
+        #[arg(long)]
+        host: String,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -111,6 +121,16 @@ pub enum RenderCommand {
     },
     /// Render systemd network mount units and service dependencies.
     SystemdMounts {
+        #[arg(long)]
+        host: String,
+    },
+    /// Render a Synology NFS permission action plan.
+    SynologyNfsPermissions {
+        #[arg(long)]
+        nas: String,
+    },
+    /// Render Proxmox storage configuration and deployment scripts.
+    ProxmoxStorage {
         #[arg(long)]
         host: String,
     },

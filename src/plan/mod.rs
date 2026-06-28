@@ -4,5 +4,7 @@ pub mod dns_access;
 pub mod env;
 pub mod guest;
 pub mod host_network;
+pub mod nas_permission;
 pub mod network_mount;
+pub mod proxmox_storage;
 pub mod proxy;

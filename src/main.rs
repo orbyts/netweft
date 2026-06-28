@@ -11,7 +11,9 @@ use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::env::resolve_env_plan;
 use netweft::plan::guest::resolve_guest_plan;
 use netweft::plan::host_network::resolve_host_network_plan;
+use netweft::plan::nas_permission::resolve_nas_permission_plan;
 use netweft::plan::network_mount::resolve_network_mount_plan;
+use netweft::plan::proxmox_storage::resolve_proxmox_storage_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
 use netweft::resolve::ResolvedPlan;
 
@@ -84,6 +86,12 @@ fn main() -> Result<()> {
                 ShowCommand::NetworkMounts { host } => {
                     resolve_network_mount_plan(&bundle, &host)?.print();
                 }
+                ShowCommand::NasPermissions { nas } => {
+                    resolve_nas_permission_plan(&bundle, nas.as_deref())?.print();
+                }
+                ShowCommand::ProxmoxStorage { host } => {
+                    resolve_proxmox_storage_plan(&bundle, &host)?.print();
+                }
             }
         }
         Command::Adapters { command } => {
@@ -140,6 +148,21 @@ fn main() -> Result<()> {
                         "Rendered systemd network mounts: {}",
                         rendered.root.display()
                     );
+                }
+                RenderCommand::SynologyNfsPermissions { nas } => {
+                    let rendered = registry
+                        .get("synology-nfs-permissions")?
+                        .render(&context.for_host(&nas))?;
+                    println!(
+                        "Rendered Synology NFS permission plan: {}",
+                        rendered.root.display()
+                    );
+                }
+                RenderCommand::ProxmoxStorage { host } => {
+                    let rendered = registry
+                        .get("proxmox-storage")?
+                        .render(&context.for_host(&host))?;
+                    println!("Rendered Proxmox storage: {}", rendered.root.display());
                 }
                 RenderCommand::All { host } => {
                     let bind = registry.get("bind")?.render(&context)?;

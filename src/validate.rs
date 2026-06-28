@@ -18,6 +18,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_addresses(bundle)?;
     validate_host_networks(bundle)?;
     validate_guest_and_mount_references(bundle)?;
+    validate_storage_and_nas_references(bundle)?;
     resolve_proxy_plan(bundle)?;
 
     if bundle.dns.dns.recursion.enabled {
@@ -120,6 +121,69 @@ fn validate_guest_and_mount_references(bundle: &ConfigBundle) -> Result<()> {
     Ok(())
 }
 
+fn validate_storage_and_nas_references(bundle: &ConfigBundle) -> Result<()> {
+    let mut storage_ids = BTreeSet::new();
+
+    for (id, permission) in &bundle.nas_permissions.permissions {
+        if !bundle.inventory.hosts.contains_key(&permission.nas) {
+            bail!(
+                "NAS permission '{id}' references unknown NAS host '{}'",
+                permission.nas
+            );
+        }
+        if !bundle.inventory.hosts.contains_key(&permission.client_host) {
+            bail!(
+                "NAS permission '{id}' references unknown client host '{}'",
+                permission.client_host
+            );
+        }
+        if permission.share.trim().is_empty() {
+            bail!("NAS permission '{id}' has an empty share name");
+        }
+        if permission.security.trim().is_empty() {
+            bail!("NAS permission '{id}' has empty security mode");
+        }
+    }
+
+    for (id, storage) in &bundle.proxmox_storages.storages {
+        if !bundle.inventory.hosts.contains_key(&storage.host) {
+            bail!(
+                "Proxmox storage '{id}' references unknown host '{}'",
+                storage.host
+            );
+        }
+        if !bundle.inventory.hosts.contains_key(&storage.server_host) {
+            bail!(
+                "Proxmox storage '{id}' references unknown server host '{}'",
+                storage.server_host
+            );
+        }
+        if !storage.mount_path.starts_with('/') {
+            bail!(
+                "Proxmox storage '{id}' path '{}' must be absolute",
+                storage.mount_path
+            );
+        }
+        if storage.export.trim().is_empty() || !storage.export.starts_with('/') {
+            bail!(
+                "Proxmox storage '{id}' export '{}' must be an absolute export path",
+                storage.export
+            );
+        }
+        if storage.content.is_empty() {
+            bail!("Proxmox storage '{id}' must declare at least one content type");
+        }
+        if !storage_ids.insert((storage.host.clone(), storage.storage_id.clone())) {
+            bail!(
+                "Proxmox storage '{id}' duplicates storage ID '{}' on host '{}'",
+                storage.storage_id,
+                storage.host
+            );
+        }
+    }
+    Ok(())
+}
+
 fn validate_schema_versions(bundle: &ConfigBundle) -> Result<()> {
     let versions = [
         ("netweft.toml", bundle.settings.schema_version),
@@ -128,6 +192,14 @@ fn validate_schema_versions(bundle: &ConfigBundle) -> Result<()> {
         ("services.toml", bundle.services.schema_version),
         ("guests.toml", bundle.guests.schema_version),
         ("mounts.toml", bundle.mounts.schema_version),
+        (
+            "nas-permissions.toml",
+            bundle.nas_permissions.schema_version,
+        ),
+        (
+            "proxmox-storages.toml",
+            bundle.proxmox_storages.schema_version,
+        ),
         ("dns.toml", bundle.dns.schema_version),
         ("allocations.toml", bundle.allocations.schema_version),
         ("location", bundle.location.schema_version),

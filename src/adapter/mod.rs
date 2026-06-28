@@ -44,6 +44,8 @@ pub enum Capability {
     HostEnvironment,
     HostNetworking,
     NetworkMounts,
+    NasPermissions,
+    ProxmoxStorage,
     ReverseProxy,
     OverlayRouting,
     Firewall,

@@ -13,7 +13,9 @@ use crate::plan::dns::{ResolvedDnsPlan, resolve_dns_plan};
 use crate::plan::env::{ResolvedEnvPlan, resolve_env_plan};
 use crate::plan::guest::{ResolvedGuestPlan, resolve_guest_plan};
 use crate::plan::host_network::{ResolvedHostNetworkPlan, resolve_host_network_plan};
+use crate::plan::nas_permission::{ResolvedNasPermissionPlan, resolve_nas_permission_plan};
 use crate::plan::network_mount::{ResolvedNetworkMountPlan, resolve_network_mount_plan};
+use crate::plan::proxmox_storage::{ResolvedProxmoxStoragePlan, resolve_proxmox_storage_plan};
 use crate::plan::proxy::{ResolvedProxyPlan, resolve_proxy_plan};
 
 /// Shared resolution input for all adapters.
@@ -74,5 +76,13 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn network_mounts(&self, host: &str) -> Result<ResolvedNetworkMountPlan> {
         resolve_network_mount_plan(self.config, host)
+    }
+
+    pub fn nas_permissions(&self, nas: Option<&str>) -> Result<ResolvedNasPermissionPlan> {
+        resolve_nas_permission_plan(self.config, nas)
+    }
+
+    pub fn proxmox_storage(&self, host: &str) -> Result<ResolvedProxmoxStoragePlan> {
+        resolve_proxmox_storage_plan(self.config, host)
     }
 }

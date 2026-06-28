@@ -528,6 +528,131 @@ pub enum NetworkMountProvider {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct NasPermissionsFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub permissions: BTreeMap<String, NasPermission>,
+}
+
+impl Default for NasPermissionsFile {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
+            permissions: BTreeMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NasPermission {
+    pub nas: String,
+    pub provider: NasPermissionProvider,
+    pub share: String,
+    pub client_host: String,
+    pub access: NasAccess,
+    pub squash: NasSquash,
+    #[serde(default = "default_nfs_security")]
+    pub security: String,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum NasPermissionProvider {
+    SynologyNfs,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum NasAccess {
+    ReadOnly,
+    ReadWrite,
+}
+
+impl NasAccess {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::ReadOnly => "read-only",
+            Self::ReadWrite => "read-write",
+        }
+    }
+    pub fn dsm_name(self) -> &'static str {
+        match self {
+            Self::ReadOnly => "Read-Only",
+            Self::ReadWrite => "Read/Write",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum NasSquash {
+    None,
+    MapRootToAdmin,
+    MapAllToAdmin,
+    MapAllToGuest,
+}
+
+impl NasSquash {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::MapRootToAdmin => "map-root-to-admin",
+            Self::MapAllToAdmin => "map-all-to-admin",
+            Self::MapAllToGuest => "map-all-to-guest",
+        }
+    }
+    pub fn dsm_name(self) -> &'static str {
+        match self {
+            Self::None => "No mapping",
+            Self::MapRootToAdmin => "Map root to admin",
+            Self::MapAllToAdmin => "Map all users to admin",
+            Self::MapAllToGuest => "Map all users to guest",
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxStoragesFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub storages: BTreeMap<String, ProxmoxStorage>,
+}
+
+impl Default for ProxmoxStoragesFile {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
+            storages: BTreeMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxStorage {
+    pub host: String,
+    pub storage_id: String,
+    pub provider: ProxmoxStorageProvider,
+    pub server_host: String,
+    pub export: String,
+    pub mount_path: String,
+    #[serde(default)]
+    pub options: Vec<String>,
+    #[serde(default)]
+    pub content: Vec<String>,
+    pub prune_backups: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ProxmoxStorageProvider {
+    Nfs,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AllocationsFile {
     pub schema_version: u32,
     pub ula: Option<UlaAllocations>,
@@ -679,6 +804,8 @@ pub struct ConfigBundle {
     pub services: ServicesFile,
     pub guests: GuestsFile,
     pub mounts: NetworkMountsFile,
+    pub nas_permissions: NasPermissionsFile,
+    pub proxmox_storages: ProxmoxStoragesFile,
     pub dns: DnsFile,
     pub allocations: AllocationsFile,
     pub location: LocationFile,
@@ -754,6 +881,10 @@ fn default_true() -> bool {
 
 fn default_guest_bridge() -> String {
     "vmbr0".to_owned()
+}
+
+fn default_nfs_security() -> String {
+    "sys".to_owned()
 }
 
 fn default_ipv4_families() -> Vec<AddressFamily> {

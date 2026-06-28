@@ -28,6 +28,8 @@ impl<'a> ConfigLoader<'a> {
             services: self.read("services.toml")?,
             guests: self.read_optional("guests.toml")?,
             mounts: self.read_optional("mounts.toml")?,
+            nas_permissions: self.read_optional("nas-permissions.toml")?,
+            proxmox_storages: self.read_optional("proxmox-storages.toml")?,
             dns: self.read("dns.toml")?,
             allocations: self.read("allocations.toml")?,
             location: self.read_path(&location_path)?,
