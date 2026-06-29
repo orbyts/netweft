@@ -84,6 +84,8 @@ pub struct Host {
     pub ssh_user: Option<String>,
     #[serde(default)]
     pub network: Option<HostNetworkConfig>,
+    #[serde(default)]
+    pub os_network: Option<HostOsNetworkConfig>,
     #[serde(default = "default_true")]
     pub enabled: bool,
 }
@@ -110,6 +112,74 @@ pub struct HostNetworkConfig {
 #[serde(rename_all = "kebab-case")]
 pub enum HostNetworkProvider {
     ProxmoxIfupdown2,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostOsNetworkConfig {
+    pub provider: HostOsNetworkProvider,
+    pub renderer: HostOsNetworkRenderer,
+    pub interface: String,
+    pub ipv4_mode: HostOsIpv4Mode,
+    pub ipv6_mode: HostOsIpv6Mode,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostOsNetworkProvider {
+    Netplan,
+}
+
+impl HostOsNetworkProvider {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Netplan => "netplan",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostOsNetworkRenderer {
+    Networkd,
+}
+
+impl HostOsNetworkRenderer {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Networkd => "networkd",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostOsIpv4Mode {
+    Dhcp,
+}
+
+impl HostOsIpv4Mode {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Dhcp => "dhcp",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum HostOsIpv6Mode {
+    Disabled,
+    RouterAdvertised,
+}
+
+impl HostOsIpv6Mode {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::RouterAdvertised => "router-advertised",
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

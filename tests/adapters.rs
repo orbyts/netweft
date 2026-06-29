@@ -23,6 +23,7 @@ fn builtin_registry_exposes_official_adapters() {
         vec![
             "bind",
             "env",
+            "netplan",
             "nginx",
             "proxmox",
             "proxmox-guests",

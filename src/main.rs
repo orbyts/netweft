@@ -13,6 +13,7 @@ use netweft::plan::guest::resolve_guest_plan;
 use netweft::plan::host_network::resolve_host_network_plan;
 use netweft::plan::nas_permission::resolve_nas_permission_plan;
 use netweft::plan::network_mount::resolve_network_mount_plan;
+use netweft::plan::os_network::resolve_os_network_plan;
 use netweft::plan::proxmox_storage::resolve_proxmox_storage_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
 use netweft::resolve::ResolvedPlan;
@@ -80,6 +81,9 @@ fn main() -> Result<()> {
                     let plan = resolve_host_network_plan(&bundle, &host)?;
                     plan.print();
                 }
+                ShowCommand::OsNetwork { host } => {
+                    resolve_os_network_plan(&bundle, &host)?.print();
+                }
                 ShowCommand::Guests => {
                     resolve_guest_plan(&bundle)?.print();
                 }
@@ -132,6 +136,13 @@ fn main() -> Result<()> {
                 RenderCommand::Env { host } => {
                     let rendered = registry.get("env")?.render(&context.for_host(&host))?;
                     println!("Rendered host environment: {}", rendered.root.display());
+                }
+                RenderCommand::Netplan { host } => {
+                    let rendered = registry.get("netplan")?.render(&context.for_host(&host))?;
+                    println!(
+                        "Rendered Netplan configuration: {}",
+                        rendered.root.display()
+                    );
                 }
                 RenderCommand::Proxmox { host } => {
                     let rendered = registry.get("proxmox")?.render(&context.for_host(&host))?;

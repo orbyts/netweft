@@ -6,6 +6,7 @@ use crate::model::{
     ConfigBundle, GuestKind, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy,
 };
 use crate::plan::dns_access::derive_dns_access;
+use crate::plan::os_network::resolve_os_network_plan;
 use crate::plan::proxy::resolve_proxy_plan;
 
 #[derive(Debug, Default)]
@@ -19,6 +20,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_references(bundle)?;
     validate_addresses(bundle)?;
     validate_host_networks(bundle)?;
+    validate_os_networks(bundle)?;
     validate_guest_and_mount_references(bundle)?;
     validate_storage_and_nas_references(bundle)?;
     resolve_proxy_plan(bundle)?;
@@ -64,6 +66,15 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     }
 
     Ok(report)
+}
+
+fn validate_os_networks(bundle: &ConfigBundle) -> Result<()> {
+    for (host_name, host) in &bundle.inventory.hosts {
+        if host.os_network.is_some() {
+            resolve_os_network_plan(bundle, host_name)?;
+        }
+    }
+    Ok(())
 }
 
 fn validate_guest_and_mount_references(bundle: &ConfigBundle) -> Result<()> {

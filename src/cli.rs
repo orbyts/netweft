@@ -74,6 +74,11 @@ pub enum ShowCommand {
         #[arg(long)]
         host: String,
     },
+    /// Show resolved operating-system network configuration for a host.
+    OsNetwork {
+        #[arg(long)]
+        host: String,
+    },
     /// Show resolved Proxmox VM/LXC guest identities and addresses.
     Guests,
     /// Show resolved network mounts for a host.
@@ -111,6 +116,11 @@ pub enum RenderCommand {
     },
     /// Render Docker Compose and shell environment files for a host.
     Env {
+        #[arg(long)]
+        host: String,
+    },
+    /// Render Ubuntu Netplan host networking.
+    Netplan {
         #[arg(long)]
         host: String,
     },

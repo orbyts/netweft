@@ -15,6 +15,7 @@ use crate::plan::guest::{ResolvedGuestPlan, resolve_guest_plan};
 use crate::plan::host_network::{ResolvedHostNetworkPlan, resolve_host_network_plan};
 use crate::plan::nas_permission::{ResolvedNasPermissionPlan, resolve_nas_permission_plan};
 use crate::plan::network_mount::{ResolvedNetworkMountPlan, resolve_network_mount_plan};
+use crate::plan::os_network::{ResolvedOsNetworkPlan, resolve_os_network_plan};
 use crate::plan::proxmox_storage::{ResolvedProxmoxStoragePlan, resolve_proxmox_storage_plan};
 use crate::plan::proxy::{ResolvedProxyPlan, resolve_proxy_plan};
 
@@ -76,6 +77,10 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn network_mounts(&self, host: &str) -> Result<ResolvedNetworkMountPlan> {
         resolve_network_mount_plan(self.config, host)
+    }
+
+    pub fn os_network(&self, host: &str) -> Result<ResolvedOsNetworkPlan> {
+        resolve_os_network_plan(self.config, host)
     }
 
     pub fn nas_permissions(&self, nas: Option<&str>) -> Result<ResolvedNasPermissionPlan> {

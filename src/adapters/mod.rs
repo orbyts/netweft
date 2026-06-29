@@ -3,6 +3,7 @@
 pub mod bind;
 pub mod env;
 pub mod nas_permission;
+pub mod netplan;
 pub mod nginx;
 pub mod proxmox;
 pub mod proxmox_guest;
@@ -18,6 +19,7 @@ pub fn builtin_registry() -> Result<AdapterRegistry> {
     let mut registry = AdapterRegistry::new();
     registry.register(bind::BindAdapter)?;
     registry.register(env::EnvironmentAdapter)?;
+    registry.register(netplan::NetplanAdapter)?;
     registry.register(nginx::NginxAdapter)?;
     registry.register(proxmox::ProxmoxAdapter)?;
     registry.register(proxmox_guest::ProxmoxGuestAdapter)?;
