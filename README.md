@@ -2,7 +2,7 @@
 
 Deterministic network planning and configuration generation for portable infrastructure.
 
-Netweft validates stable infrastructure intent, resolves provider-neutral plans, and renders deterministic artifacts. Deployment remains explicit.
+Netweft validates stable infrastructure intent, resolves provider-neutral plans, and renders deterministic artifacts. Deployment remains explicit and reviewable.
 
 ## Documentation
 
@@ -14,30 +14,58 @@ Netweft validates stable infrastructure intent, resolves provider-neutral plans,
 - [Operations](docs/operations/README.md)
 - [Development](docs/development/README.md)
 
-## Common workflow
+## Built-in adapters
+
+```text
+bind
+nginx
+docker
+env
+netplan
+proxmox
+proxmox-guests
+proxmox-sdn
+proxmox-storage
+synology-nfs-permissions
+systemd-mounts
+```
+
+List the adapters compiled into the current binary:
+
+```bash
+netweft adapters list
+```
+
+## Common inspection workflow
 
 ```bash
 netweft validate
 netweft show dns
 netweft show proxy
-netweft show env --host nexus
-netweft render bind
-netweft render env --host nexus
-netweft render nginx --host nexus
+netweft show docker --host nexus
+netweft show host-network --host zion
+netweft show os-network --host quasar
+netweft show guests
+netweft show proxmox-sdn --host zion
+netweft show proxmox-storage --host zion
+netweft show network-mounts --host vortex
+netweft show nas-permissions
 ```
 
-Then use the matching deployment guide.
+Render only after the resolved plan looks correct, then use the matching deployment guide.
 
 ## Boundaries
 
 Netweft does not directly:
 
 - copy files over SSH;
-- restart containers;
-- modify routers;
-- configure operating-system networking;
+- configure routers;
+- store secrets;
 - issue certificates;
-- store secrets.
+- approve Tailscale routes;
+- apply generated artifacts automatically.
+
+Some adapters render guarded `apply.sh`, `verify.sh`, and `rollback.sh` scripts. Running those scripts remains an explicit operator action.
 
 ## Development verification
 
