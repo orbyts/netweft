@@ -20,6 +20,7 @@ use crate::plan::os_network::{ResolvedOsNetworkPlan, resolve_os_network_plan};
 use crate::plan::proxmox_sdn::{ResolvedProxmoxSdnPlan, resolve_proxmox_sdn_plan};
 use crate::plan::proxmox_storage::{ResolvedProxmoxStoragePlan, resolve_proxmox_storage_plan};
 use crate::plan::proxy::{ResolvedProxyPlan, resolve_proxy_plan};
+use crate::plan::ssh::{ResolvedSshPlan, resolve_ssh_plan};
 
 /// Shared resolution input for all adapters.
 #[derive(Debug)]
@@ -95,6 +96,10 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn proxmox_sdn(&self, host: &str) -> Result<ResolvedProxmoxSdnPlan> {
         resolve_proxmox_sdn_plan(self.config, host)
+    }
+
+    pub fn ssh(&self, client: &str) -> Result<ResolvedSshPlan> {
+        resolve_ssh_plan(self.config, client)
     }
 
     pub fn proxmox_storage(&self, host: &str) -> Result<ResolvedProxmoxStoragePlan> {

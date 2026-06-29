@@ -10,6 +10,7 @@ use crate::plan::docker::resolve_docker_plan;
 use crate::plan::os_network::resolve_os_network_plan;
 use crate::plan::proxmox_sdn::resolve_proxmox_sdn_plan;
 use crate::plan::proxy::resolve_proxy_plan;
+use crate::plan::ssh::resolve_ssh_plan;
 
 #[derive(Debug, Default)]
 pub struct ValidationReport {
@@ -27,6 +28,9 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_guest_and_mount_references(bundle)?;
     validate_storage_and_nas_references(bundle)?;
     resolve_proxy_plan(bundle)?;
+    for client in bundle.ssh.clients.keys() {
+        resolve_ssh_plan(bundle, client)?;
+    }
 
     if bundle.dns.dns.recursion.enabled {
         derive_dns_access(bundle)?;
@@ -280,6 +284,7 @@ fn validate_schema_versions(bundle: &ConfigBundle) -> Result<()> {
         ("netweft.toml", bundle.settings.schema_version),
         ("inventory.toml", bundle.inventory.schema_version),
         ("networks.toml", bundle.networks.schema_version),
+        ("ssh.toml", bundle.ssh.schema_version),
         ("services.toml", bundle.services.schema_version),
         ("guests.toml", bundle.guests.schema_version),
         ("mounts.toml", bundle.mounts.schema_version),

@@ -53,6 +53,7 @@ pub enum Capability {
     Firewall,
     CertificateIntent,
     DockerNetworking,
+    SshClientConfig,
 }
 
 /// Human- and machine-readable adapter metadata.

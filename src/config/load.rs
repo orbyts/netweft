@@ -26,6 +26,7 @@ impl<'a> ConfigLoader<'a> {
             inventory: self.read("inventory.toml")?,
             networks: self.read("networks.toml")?,
             docker: self.read_optional("docker.toml")?,
+            ssh: self.read_optional("ssh.toml")?,
             services: self.read("services.toml")?,
             guests: self.read_optional("guests.toml")?,
             mounts: self.read_optional("mounts.toml")?,

@@ -11,3 +11,4 @@ pub mod os_network;
 pub mod proxmox_sdn;
 pub mod proxmox_storage;
 pub mod proxy;
+pub mod ssh;

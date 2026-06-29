@@ -18,6 +18,7 @@ use netweft::plan::os_network::resolve_os_network_plan;
 use netweft::plan::proxmox_sdn::resolve_proxmox_sdn_plan;
 use netweft::plan::proxmox_storage::resolve_proxmox_storage_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
+use netweft::plan::ssh::resolve_ssh_plan;
 use netweft::resolve::ResolvedPlan;
 
 fn main() -> Result<()> {
@@ -73,6 +74,9 @@ fn main() -> Result<()> {
                 }
                 ShowCommand::Docker { host } => {
                     resolve_docker_plan(&bundle, &host)?.print();
+                }
+                ShowCommand::Ssh { client } => {
+                    resolve_ssh_plan(&bundle, &client)?.print();
                 }
                 ShowCommand::Proxy => {
                     let plan = resolve_proxy_plan(&bundle)?;
@@ -140,6 +144,10 @@ fn main() -> Result<()> {
                         println!("Validated Nginx configuration with {}", nginx.display());
                     }
                     println!("Rendered Nginx configuration: {}", rendered.root.display());
+                }
+                RenderCommand::Ssh { client } => {
+                    let rendered = registry.get("ssh")?.render(&context.for_host(&client))?;
+                    println!("Rendered SSH client config: {}", rendered.root.display());
                 }
                 RenderCommand::Docker { host } => {
                     let rendered = registry.get("docker")?.render(&context.for_host(&host))?;

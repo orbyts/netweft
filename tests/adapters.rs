@@ -30,6 +30,7 @@ fn builtin_registry_exposes_official_adapters() {
             "proxmox-guests",
             "proxmox-sdn",
             "proxmox-storage",
+            "ssh",
             "synology-nfs-permissions",
             "systemd-mounts"
         ]

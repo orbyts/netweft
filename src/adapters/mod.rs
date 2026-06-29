@@ -10,6 +10,7 @@ pub mod proxmox;
 pub mod proxmox_guest;
 pub mod proxmox_sdn;
 pub mod proxmox_storage;
+pub mod ssh;
 pub mod systemd_mount;
 
 use anyhow::Result;
@@ -28,6 +29,7 @@ pub fn builtin_registry() -> Result<AdapterRegistry> {
     registry.register(proxmox_guest::ProxmoxGuestAdapter)?;
     registry.register(proxmox_sdn::ProxmoxSdnAdapter)?;
     registry.register(systemd_mount::SystemdMountAdapter)?;
+    registry.register(ssh::SshAdapter)?;
     registry.register(nas_permission::NasPermissionAdapter)?;
     registry.register(proxmox_storage::ProxmoxStorageAdapter)?;
     Ok(registry)

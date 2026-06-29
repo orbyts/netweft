@@ -69,6 +69,11 @@ pub enum ShowCommand {
     },
     /// Show the provider-neutral reverse-proxy plan.
     Proxy,
+    /// Show resolved SSH client aliases.
+    Ssh {
+        #[arg(long)]
+        client: String,
+    },
     /// Show the generated environment plan for a host.
     Env {
         #[arg(long)]
@@ -123,6 +128,11 @@ pub enum RenderCommand {
         /// Nginx executable used by --check.
         #[arg(long, default_value = "nginx")]
         nginx: PathBuf,
+    },
+    /// Render location-resolved OpenSSH client configuration.
+    Ssh {
+        #[arg(long)]
+        client: String,
     },
     /// Render Docker daemon and named-network reconciliation.
     Docker {

@@ -230,6 +230,54 @@ pub struct NetworksFile {
     pub networks: BTreeMap<String, LogicalNetwork>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SshFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub clients: BTreeMap<String, SshClient>,
+    #[serde(default)]
+    pub targets: BTreeMap<String, SshTarget>,
+}
+
+impl Default for SshFile {
+    fn default() -> Self {
+        Self {
+            schema_version: SCHEMA_VERSION,
+            clients: BTreeMap::new(),
+            targets: BTreeMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SshClient {
+    #[serde(default)]
+    pub identities: BTreeMap<String, SshIdentity>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SshIdentity {
+    pub file: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SshTarget {
+    pub host: Option<String>,
+    pub guest: Option<String>,
+    pub service: Option<String>,
+    pub interface: Option<String>,
+    pub user: String,
+    #[serde(default = "default_ssh_port")]
+    pub port: u16,
+    pub identity: String,
+    #[serde(default)]
+    pub forward_agent: bool,
+}
+
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DockerFile {
@@ -998,6 +1046,7 @@ pub struct ConfigBundle {
     pub inventory: InventoryFile,
     pub networks: NetworksFile,
     pub docker: DockerFile,
+    pub ssh: SshFile,
     pub services: ServicesFile,
     pub guests: GuestsFile,
     pub mounts: NetworkMountsFile,
@@ -1071,6 +1120,10 @@ impl fmt::Display for Ipv6Mode {
 
 pub fn parse_ip(value: &str) -> Result<IpAddr, std::net::AddrParseError> {
     value.parse()
+}
+
+fn default_ssh_port() -> u16 {
+    22
 }
 
 fn default_true() -> bool {
