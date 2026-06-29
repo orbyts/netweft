@@ -470,9 +470,25 @@ pub struct Guest {
     pub onboot: bool,
     pub startup: Option<String>,
     #[serde(default)]
-    pub pci_devices: Vec<String>,
+    pub pci_devices: Vec<GuestPciDevice>,
     #[serde(default)]
-    pub virtiofs: Vec<String>,
+    pub virtiofs: Vec<GuestVirtioFs>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct GuestPciDevice {
+    pub slot: u8,
+    pub device: String,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct GuestVirtioFs {
+    pub slot: u8,
+    pub directory: String,
+    #[serde(default)]
+    pub expose_acl: bool,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]

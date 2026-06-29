@@ -2,7 +2,7 @@ use std::net::Ipv4Addr;
 
 use anyhow::{Context, Result};
 
-use crate::model::{ConfigBundle, GuestAddressMode, GuestKind};
+use crate::model::{ConfigBundle, GuestAddressMode, GuestKind, GuestPciDevice, GuestVirtioFs};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedGuest {
@@ -17,8 +17,8 @@ pub struct ResolvedGuest {
     pub address_mode: GuestAddressMode,
     pub onboot: bool,
     pub startup: Option<String>,
-    pub pci_devices: Vec<String>,
-    pub virtiofs: Vec<String>,
+    pub pci_devices: Vec<GuestPciDevice>,
+    pub virtiofs: Vec<GuestVirtioFs>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

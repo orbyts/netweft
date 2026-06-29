@@ -2,7 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::{Result, bail};
 
-use crate::model::{ConfigBundle, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy};
+use crate::model::{
+    ConfigBundle, GuestKind, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy,
+};
 use crate::plan::dns_access::derive_dns_access;
 use crate::plan::proxy::resolve_proxy_plan;
 
@@ -91,9 +93,47 @@ fn validate_guest_and_mount_references(bundle: &ConfigBundle) -> Result<()> {
         if !addresses.insert(guest.ipv4) {
             bail!("guest '{name}' duplicates IPv4 {}", guest.ipv4);
         }
-        for device in &guest.pci_devices {
-            if let Some(owner) = pci.insert(device.clone(), name.clone()) {
-                bail!("guests '{owner}' and '{name}' both claim PCI device '{device}'");
+        if guest.kind != GuestKind::Vm
+            && (!guest.pci_devices.is_empty() || !guest.virtiofs.is_empty())
+        {
+            bail!("guest '{name}' is not a VM but declares VM-only attachments");
+        }
+
+        let mut pci_slots = BTreeSet::new();
+        for attachment in &guest.pci_devices {
+            if !pci_slots.insert(attachment.slot) {
+                bail!(
+                    "guest '{name}' duplicates PCI attachment slot {}",
+                    attachment.slot
+                );
+            }
+            if attachment.device.trim().is_empty() {
+                bail!(
+                    "guest '{name}' PCI attachment slot {} has an empty device",
+                    attachment.slot
+                );
+            }
+            if let Some(owner) = pci.insert(attachment.device.clone(), name.clone()) {
+                bail!(
+                    "guests '{owner}' and '{name}' both claim PCI device '{}'",
+                    attachment.device
+                );
+            }
+        }
+
+        let mut virtiofs_slots = BTreeSet::new();
+        for attachment in &guest.virtiofs {
+            if !virtiofs_slots.insert(attachment.slot) {
+                bail!(
+                    "guest '{name}' duplicates VirtioFS attachment slot {}",
+                    attachment.slot
+                );
+            }
+            if attachment.directory.trim().is_empty() {
+                bail!(
+                    "guest '{name}' VirtioFS attachment slot {} has an empty directory",
+                    attachment.slot
+                );
             }
         }
     }
