@@ -79,6 +79,11 @@ pub enum ShowCommand {
         #[arg(long)]
         host: String,
     },
+    /// Show resolved Proxmox SDN configuration for a host.
+    ProxmoxSdn {
+        #[arg(long)]
+        host: String,
+    },
     /// Show resolved Proxmox VM/LXC guest identities and addresses.
     Guests,
     /// Show resolved network mounts for a host.
@@ -141,6 +146,11 @@ pub enum RenderCommand {
     },
     /// Render Proxmox guest reconciliation and deployment scripts.
     ProxmoxGuests {
+        #[arg(long)]
+        host: String,
+    },
+    /// Render Proxmox SDN reconciliation and deployment scripts.
+    ProxmoxSdn {
         #[arg(long)]
         host: String,
     },

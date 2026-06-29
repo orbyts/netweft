@@ -46,6 +46,7 @@ pub enum Capability {
     NetworkMounts,
     NasPermissions,
     ProxmoxGuests,
+    ProxmoxSdn,
     ProxmoxStorage,
     ReverseProxy,
     OverlayRouting,

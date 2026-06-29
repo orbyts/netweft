@@ -230,6 +230,87 @@ pub struct NetworksFile {
     pub networks: BTreeMap<String, LogicalNetwork>,
 }
 
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxSdnFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub zones: BTreeMap<String, ProxmoxSdnZone>,
+    #[serde(default)]
+    pub vnets: BTreeMap<String, ProxmoxSdnVnet>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxSdnZone {
+    pub host: String,
+    pub kind: ProxmoxSdnZoneKind,
+    pub ipam: ProxmoxSdnIpam,
+    pub dhcp: ProxmoxSdnDhcp,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ProxmoxSdnZoneKind {
+    Simple,
+}
+
+impl ProxmoxSdnZoneKind {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Simple => "simple",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ProxmoxSdnIpam {
+    Pve,
+}
+
+impl ProxmoxSdnIpam {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Pve => "pve",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ProxmoxSdnDhcp {
+    Dnsmasq,
+}
+
+impl ProxmoxSdnDhcp {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Dnsmasq => "dnsmasq",
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxSdnVnet {
+    pub zone: String,
+    pub alias: Option<String>,
+    #[serde(default)]
+    pub subnets: Vec<ProxmoxSdnSubnet>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProxmoxSdnSubnet {
+    pub cidr: Ipv4Net,
+    pub gateway: Ipv4Addr,
+    pub dhcp_start: Ipv4Addr,
+    pub dhcp_end: Ipv4Addr,
+    #[serde(default)]
+    pub snat: bool,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LogicalNetwork {
@@ -894,6 +975,7 @@ pub struct ConfigBundle {
     pub mounts: NetworkMountsFile,
     pub nas_permissions: NasPermissionsFile,
     pub proxmox_storages: ProxmoxStoragesFile,
+    pub proxmox_sdn: ProxmoxSdnFile,
     pub dns: DnsFile,
     pub allocations: AllocationsFile,
     pub location: LocationFile,

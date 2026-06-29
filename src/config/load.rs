@@ -30,6 +30,7 @@ impl<'a> ConfigLoader<'a> {
             mounts: self.read_optional("mounts.toml")?,
             nas_permissions: self.read_optional("nas-permissions.toml")?,
             proxmox_storages: self.read_optional("proxmox-storages.toml")?,
+            proxmox_sdn: self.read_optional("proxmox-sdn.toml")?,
             dns: self.read("dns.toml")?,
             allocations: self.read("allocations.toml")?,
             location: self.read_path(&location_path)?,

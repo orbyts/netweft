@@ -7,6 +7,7 @@ use crate::model::{
 };
 use crate::plan::dns_access::derive_dns_access;
 use crate::plan::os_network::resolve_os_network_plan;
+use crate::plan::proxmox_sdn::resolve_proxmox_sdn_plan;
 use crate::plan::proxy::resolve_proxy_plan;
 
 #[derive(Debug, Default)]
@@ -21,6 +22,7 @@ pub fn validate_bundle(bundle: &ConfigBundle) -> Result<ValidationReport> {
     validate_addresses(bundle)?;
     validate_host_networks(bundle)?;
     validate_os_networks(bundle)?;
+    validate_proxmox_sdn(bundle)?;
     validate_guest_and_mount_references(bundle)?;
     validate_storage_and_nas_references(bundle)?;
     resolve_proxy_plan(bundle)?;
@@ -74,6 +76,43 @@ fn validate_os_networks(bundle: &ConfigBundle) -> Result<()> {
             resolve_os_network_plan(bundle, host_name)?;
         }
     }
+    Ok(())
+}
+
+fn validate_proxmox_sdn(bundle: &ConfigBundle) -> Result<()> {
+    let mut zone_names = BTreeSet::new();
+    for (name, zone) in &bundle.proxmox_sdn.zones {
+        if !zone_names.insert(name.as_str()) {
+            bail!("duplicate Proxmox SDN zone '{name}'");
+        }
+        if !bundle.inventory.hosts.contains_key(&zone.host) {
+            bail!(
+                "Proxmox SDN zone '{name}' references unknown host '{}'",
+                zone.host
+            );
+        }
+    }
+
+    for (name, vnet) in &bundle.proxmox_sdn.vnets {
+        if !bundle.proxmox_sdn.zones.contains_key(&vnet.zone) {
+            bail!(
+                "Proxmox SDN VNet '{name}' references unknown zone '{}'",
+                vnet.zone
+            );
+        }
+    }
+
+    let hosts: BTreeSet<_> = bundle
+        .proxmox_sdn
+        .zones
+        .values()
+        .map(|zone| zone.host.as_str())
+        .collect();
+
+    for host in hosts {
+        resolve_proxmox_sdn_plan(bundle, host)?;
+    }
+
     Ok(())
 }
 

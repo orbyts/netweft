@@ -27,6 +27,7 @@ fn builtin_registry_exposes_official_adapters() {
             "nginx",
             "proxmox",
             "proxmox-guests",
+            "proxmox-sdn",
             "proxmox-storage",
             "synology-nfs-permissions",
             "systemd-mounts"

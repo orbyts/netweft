@@ -7,5 +7,6 @@ pub mod host_network;
 pub mod nas_permission;
 pub mod network_mount;
 pub mod os_network;
+pub mod proxmox_sdn;
 pub mod proxmox_storage;
 pub mod proxy;

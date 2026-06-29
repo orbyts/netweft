@@ -14,6 +14,7 @@ use netweft::plan::host_network::resolve_host_network_plan;
 use netweft::plan::nas_permission::resolve_nas_permission_plan;
 use netweft::plan::network_mount::resolve_network_mount_plan;
 use netweft::plan::os_network::resolve_os_network_plan;
+use netweft::plan::proxmox_sdn::resolve_proxmox_sdn_plan;
 use netweft::plan::proxmox_storage::resolve_proxmox_storage_plan;
 use netweft::plan::proxy::resolve_proxy_plan;
 use netweft::resolve::ResolvedPlan;
@@ -83,6 +84,9 @@ fn main() -> Result<()> {
                 }
                 ShowCommand::OsNetwork { host } => {
                     resolve_os_network_plan(&bundle, &host)?.print();
+                }
+                ShowCommand::ProxmoxSdn { host } => {
+                    resolve_proxmox_sdn_plan(&bundle, &host)?.print();
                 }
                 ShowCommand::Guests => {
                     resolve_guest_plan(&bundle)?.print();
@@ -174,6 +178,12 @@ fn main() -> Result<()> {
                         .get("proxmox-guests")?
                         .render(&context.for_host(&host))?;
                     println!("Rendered Proxmox guests: {}", rendered.root.display());
+                }
+                RenderCommand::ProxmoxSdn { host } => {
+                    let rendered = registry
+                        .get("proxmox-sdn")?
+                        .render(&context.for_host(&host))?;
+                    println!("Rendered Proxmox SDN: {}", rendered.root.display());
                 }
                 RenderCommand::ProxmoxStorage { host } => {
                     let rendered = registry
