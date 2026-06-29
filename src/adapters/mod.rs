@@ -1,6 +1,7 @@
 //! Official adapters shipped with the Netweft CLI.
 
 pub mod bind;
+pub mod docker;
 pub mod env;
 pub mod nas_permission;
 pub mod netplan;
@@ -19,6 +20,7 @@ use crate::adapter::registry::AdapterRegistry;
 pub fn builtin_registry() -> Result<AdapterRegistry> {
     let mut registry = AdapterRegistry::new();
     registry.register(bind::BindAdapter)?;
+    registry.register(docker::DockerAdapter)?;
     registry.register(env::EnvironmentAdapter)?;
     registry.register(netplan::NetplanAdapter)?;
     registry.register(nginx::NginxAdapter)?;

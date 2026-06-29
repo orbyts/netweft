@@ -52,6 +52,7 @@ pub enum Capability {
     OverlayRouting,
     Firewall,
     CertificateIntent,
+    DockerNetworking,
 }
 
 /// Human- and machine-readable adapter metadata.

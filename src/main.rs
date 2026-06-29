@@ -8,6 +8,7 @@ use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
+use netweft::plan::docker::resolve_docker_plan;
 use netweft::plan::env::resolve_env_plan;
 use netweft::plan::guest::resolve_guest_plan;
 use netweft::plan::host_network::resolve_host_network_plan;
@@ -69,6 +70,9 @@ fn main() -> Result<()> {
                 ShowCommand::Dns => {
                     let plan = resolve_dns_plan(&bundle)?;
                     plan.print();
+                }
+                ShowCommand::Docker { host } => {
+                    resolve_docker_plan(&bundle, &host)?.print();
                 }
                 ShowCommand::Proxy => {
                     let plan = resolve_proxy_plan(&bundle)?;
@@ -136,6 +140,10 @@ fn main() -> Result<()> {
                         println!("Validated Nginx configuration with {}", nginx.display());
                     }
                     println!("Rendered Nginx configuration: {}", rendered.root.display());
+                }
+                RenderCommand::Docker { host } => {
+                    let rendered = registry.get("docker")?.render(&context.for_host(&host))?;
+                    println!("Rendered Docker networking: {}", rendered.root.display());
                 }
                 RenderCommand::Env { host } => {
                     let rendered = registry.get("env")?.render(&context.for_host(&host))?;

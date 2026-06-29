@@ -62,6 +62,11 @@ pub enum ShowCommand {
     DnsAccess,
     /// Show the resolved DNS plan without generating files.
     Dns,
+    /// Show the resolved Docker networking plan.
+    Docker {
+        #[arg(long)]
+        host: String,
+    },
     /// Show the provider-neutral reverse-proxy plan.
     Proxy,
     /// Show the generated environment plan for a host.
@@ -118,6 +123,11 @@ pub enum RenderCommand {
         /// Nginx executable used by --check.
         #[arg(long, default_value = "nginx")]
         nginx: PathBuf,
+    },
+    /// Render Docker daemon and named-network reconciliation.
+    Docker {
+        #[arg(long)]
+        host: String,
     },
     /// Render Docker Compose and shell environment files for a host.
     Env {

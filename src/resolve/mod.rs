@@ -10,6 +10,7 @@ use crate::model::ConfigBundle;
 use crate::observe::ObservationSet;
 use crate::paths::NetweftPaths;
 use crate::plan::dns::{ResolvedDnsPlan, resolve_dns_plan};
+use crate::plan::docker::{ResolvedDockerPlan, resolve_docker_plan};
 use crate::plan::env::{ResolvedEnvPlan, resolve_env_plan};
 use crate::plan::guest::{ResolvedGuestPlan, resolve_guest_plan};
 use crate::plan::host_network::{ResolvedHostNetworkPlan, resolve_host_network_plan};
@@ -58,6 +59,10 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn dns(&self) -> Result<ResolvedDnsPlan> {
         resolve_dns_plan(self.config)
+    }
+
+    pub fn docker(&self, host: &str) -> Result<ResolvedDockerPlan> {
+        resolve_docker_plan(self.config, host)
     }
 
     pub fn proxies(&self) -> Result<ResolvedProxyPlan> {

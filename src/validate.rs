@@ -6,6 +6,7 @@ use crate::model::{
     ConfigBundle, GuestKind, Ipv6Mode, RoutingMode, SCHEMA_VERSION, TailscaleStrategy,
 };
 use crate::plan::dns_access::derive_dns_access;
+use crate::plan::docker::resolve_docker_plan;
 use crate::plan::os_network::resolve_os_network_plan;
 use crate::plan::proxmox_sdn::resolve_proxmox_sdn_plan;
 use crate::plan::proxy::resolve_proxy_plan;
@@ -410,6 +411,7 @@ fn validate_references(bundle: &ConfigBundle) -> Result<()> {
     }
 
     validate_network_routes(bundle)?;
+    validate_docker_profiles(bundle)?;
     validate_tailscale(bundle)?;
 
     if !bundle
@@ -489,6 +491,13 @@ fn validate_references(bundle: &ConfigBundle) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn validate_docker_profiles(bundle: &ConfigBundle) -> Result<()> {
+    for host in bundle.docker.hosts.keys() {
+        resolve_docker_plan(bundle, host)?;
+    }
     Ok(())
 }
 

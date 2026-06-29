@@ -232,6 +232,33 @@ pub struct NetworksFile {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct DockerFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub hosts: BTreeMap<String, DockerHost>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DockerHost {
+    pub bridge_ipv4_cidr: Ipv4Net,
+    pub bridge_ipv6_cidr: Ipv6Net,
+    pub ipv4_pool_base: Ipv4Net,
+    pub ipv4_pool_size: u8,
+    pub ipv6_pool_base: Ipv6Net,
+    pub ipv6_pool_size: u8,
+    #[serde(default)]
+    pub network_migrations: BTreeMap<String, DockerNetworkMigration>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DockerNetworkMigration {
+    pub previous_ipv6_cidr: Option<Ipv6Net>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ProxmoxSdnFile {
     pub schema_version: u32,
     #[serde(default)]
@@ -346,7 +373,7 @@ pub enum RoutingMode {
     HostPrivate,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum NetworkKind {
     Lan,
@@ -970,6 +997,7 @@ pub struct ConfigBundle {
     pub settings: SettingsFile,
     pub inventory: InventoryFile,
     pub networks: NetworksFile,
+    pub docker: DockerFile,
     pub services: ServicesFile,
     pub guests: GuestsFile,
     pub mounts: NetworkMountsFile,

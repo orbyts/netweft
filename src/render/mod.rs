@@ -1,4 +1,5 @@
 pub mod bind;
+pub mod docker;
 pub mod env;
 pub mod nas_permission;
 pub mod netplan;
