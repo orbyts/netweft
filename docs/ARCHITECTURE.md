@@ -3,22 +3,27 @@
 ```text
 TOML configuration
     ↓
-typed model
+typed model and validation
     ↓
-validation
+provider-neutral plans
+    ├── DNS
+    ├── proxy
+    ├── Docker networking
+    ├── host networking
+    ├── OS networking
+    ├── guests
+    ├── Proxmox SDN
+    ├── Proxmox storage
+    ├── network mounts
+    └── NAS permissions
     ↓
-provider-neutral resolution
-    ↓
-ResolvedPlan
-    ↓
-adapters
-    ├── BIND
-    ├── environment
-    └── native Nginx
+adapter registry
     ↓
 deterministic generated artifacts
     ↓
 explicit deployment
 ```
 
-Netweft owns planning and rendering. SSH transport, Docker lifecycle, systemd, certificates, secrets, and router configuration remain outside Netweft.
+Netweft separates identity, topology, resolution, rendering, and deployment. The configuration graph is authoritative; adapters do not rediscover or reinterpret TOML independently.
+
+Some renderers generate guarded operational scripts, but Netweft never executes them automatically.

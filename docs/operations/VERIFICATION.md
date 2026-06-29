@@ -1,26 +1,34 @@
 # Verification
 
+## Core
+
 ```bash
 netweft validate
+netweft adapters list
+```
+
+## Inspect plans
+
+```bash
 netweft show dns
 netweft show proxy
-netweft show env --host nexus
+netweft show docker --host nexus
+netweft show host-network --host zion
+netweft show os-network --host quasar
+netweft show guests
+netweft show proxmox-sdn --host zion
+netweft show proxmox-storage --host zion
+netweft show network-mounts --host vortex
+netweft show nas-permissions
 ```
 
-BIND:
+## Adapter verification
 
-```bash
-ssh -t suhail@10.214.90.10 '''sudo docker exec bind9 named-checkconf /etc/bind/named.conf'''
+Use generated `verify.sh` where present:
+
+```text
+docker/verify.sh
+proxmox-sdn/verify.sh
 ```
 
-Nginx:
-
-```bash
-ssh -t suhail@10.214.90.10 '''sudo docker exec nginx-native nginx -t'''
-```
-
-Certificate:
-
-```bash
-openssl s_client -connect 10.214.90.10:443 -servername dsm.suhail.ink   </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
-```
+Other adapters use implementation-native checks documented in their deployment guide, such as `named-checkconf`, `nginx -t`, `netplan generate`, `pvesm status`, `findmnt`, and direct service tests.
