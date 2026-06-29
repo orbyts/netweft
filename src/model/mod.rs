@@ -470,6 +470,8 @@ pub struct Guest {
     pub onboot: bool,
     pub startup: Option<String>,
     #[serde(default)]
+    pub firewall: bool,
+    #[serde(default)]
     pub pci_devices: Vec<GuestPciDevice>,
     #[serde(default)]
     pub virtiofs: Vec<GuestVirtioFs>,

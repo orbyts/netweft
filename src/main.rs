@@ -158,6 +158,12 @@ fn main() -> Result<()> {
                         rendered.root.display()
                     );
                 }
+                RenderCommand::ProxmoxGuests { host } => {
+                    let rendered = registry
+                        .get("proxmox-guests")?
+                        .render(&context.for_host(&host))?;
+                    println!("Rendered Proxmox guests: {}", rendered.root.display());
+                }
                 RenderCommand::ProxmoxStorage { host } => {
                     let rendered = registry
                         .get("proxmox-storage")?

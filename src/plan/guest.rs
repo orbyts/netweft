@@ -17,6 +17,7 @@ pub struct ResolvedGuest {
     pub address_mode: GuestAddressMode,
     pub onboot: bool,
     pub startup: Option<String>,
+    pub firewall: bool,
     pub pci_devices: Vec<GuestPciDevice>,
     pub virtiofs: Vec<GuestVirtioFs>,
 }
@@ -97,6 +98,7 @@ pub fn resolve_guest_plan(bundle: &ConfigBundle) -> Result<ResolvedGuestPlan> {
             address_mode: guest.address_mode,
             onboot: guest.onboot,
             startup: guest.startup.clone(),
+            firewall: guest.firewall,
             pci_devices: guest.pci_devices.clone(),
             virtiofs: guest.virtiofs.clone(),
         });

@@ -129,6 +129,11 @@ pub enum RenderCommand {
         #[arg(long)]
         nas: String,
     },
+    /// Render Proxmox guest reconciliation and deployment scripts.
+    ProxmoxGuests {
+        #[arg(long)]
+        host: String,
+    },
     /// Render Proxmox storage configuration and deployment scripts.
     ProxmoxStorage {
         #[arg(long)]
