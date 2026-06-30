@@ -1,6 +1,7 @@
 //! Official adapters shipped with the Netweft CLI.
 
 pub mod bind;
+pub mod cloudflare;
 pub mod docker;
 pub mod env;
 pub mod nas_permission;
@@ -21,6 +22,7 @@ use crate::adapter::registry::AdapterRegistry;
 pub fn builtin_registry() -> Result<AdapterRegistry> {
     let mut registry = AdapterRegistry::new();
     registry.register(bind::BindAdapter)?;
+    registry.register(cloudflare::CloudflareAdapter)?;
     registry.register(docker::DockerAdapter)?;
     registry.register(env::EnvironmentAdapter)?;
     registry.register(netplan::NetplanAdapter)?;

@@ -62,6 +62,8 @@ pub enum ShowCommand {
     DnsAccess,
     /// Show the resolved DNS plan without generating files.
     Dns,
+    /// Show the resolved location-aware Cloudflare ingress plan.
+    Cloudflare,
     /// Show the resolved Docker networking plan.
     Docker {
         #[arg(long)]
@@ -133,6 +135,11 @@ pub enum RenderCommand {
     Ssh {
         #[arg(long)]
         client: String,
+    },
+    /// Render Cloudflare Tunnel, DNS reconciliation, and connector deployment.
+    Cloudflare {
+        #[arg(long)]
+        tunnel: Option<String>,
     },
     /// Render Docker daemon and named-network reconciliation.
     Docker {

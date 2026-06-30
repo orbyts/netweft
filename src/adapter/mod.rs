@@ -54,6 +54,9 @@ pub enum Capability {
     CertificateIntent,
     DockerNetworking,
     SshClientConfig,
+    ExternalIngress,
+    CloudflareDns,
+    CloudflareTunnel,
 }
 
 /// Human- and machine-readable adapter metadata.

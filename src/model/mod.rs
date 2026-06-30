@@ -280,6 +280,69 @@ pub struct SshTarget {
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct CloudflareFile {
+    pub schema_version: u32,
+    #[serde(default)]
+    pub providers: BTreeMap<String, CloudflareProvider>,
+    #[serde(default)]
+    pub tunnels: BTreeMap<String, CloudflareTunnel>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CloudflareProvider {
+    pub zone: String,
+    pub zone_id: String,
+    pub account_id: String,
+    pub tunnel_api_token_env: String,
+    pub dns_api_token_env: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CloudflareTunnel {
+    pub provider: String,
+    pub connector_host: String,
+    pub origin: String,
+    #[serde(default = "default_true")]
+    pub origin_tls_verify: bool,
+    #[serde(default)]
+    pub hostnames: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LocationExternalIngress {
+    pub mode: ExternalIngressMode,
+    pub provider: String,
+    pub tunnel: Option<String>,
+    pub origin_host: Option<String>,
+    #[serde(default)]
+    pub publish_ipv4: bool,
+    #[serde(default)]
+    pub publish_ipv6: bool,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum ExternalIngressMode {
+    CloudflareTunnel,
+    CloudflareDirect,
+    Disabled,
+}
+
+impl ExternalIngressMode {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::CloudflareTunnel => "cloudflare-tunnel",
+            Self::CloudflareDirect => "cloudflare-direct",
+            Self::Disabled => "disabled",
+        }
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DockerFile {
     pub schema_version: u32,
     #[serde(default)]
@@ -925,6 +988,7 @@ pub struct LocationFile {
     pub hosts: BTreeMap<String, LocationHost>,
     #[serde(default)]
     pub tailscale: LocationTailscale,
+    pub external_ingress: Option<LocationExternalIngress>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -1047,6 +1111,7 @@ pub struct ConfigBundle {
     pub networks: NetworksFile,
     pub docker: DockerFile,
     pub ssh: SshFile,
+    pub cloudflare: CloudflareFile,
     pub services: ServicesFile,
     pub guests: GuestsFile,
     pub mounts: NetworkMountsFile,

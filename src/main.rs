@@ -6,6 +6,7 @@ use netweft::adapters::nginx::validate_nginx_config;
 use netweft::cli::{AdapterCommand, Cli, Command, RenderCommand, ShowCommand};
 use netweft::config::load::ConfigLoader;
 use netweft::paths::NetweftPaths;
+use netweft::plan::cloudflare::resolve_cloudflare_plan;
 use netweft::plan::dns::resolve_dns_plan;
 use netweft::plan::dns_access::derive_dns_access;
 use netweft::plan::docker::resolve_docker_plan;
@@ -71,6 +72,9 @@ fn main() -> Result<()> {
                 ShowCommand::Dns => {
                     let plan = resolve_dns_plan(&bundle)?;
                     plan.print();
+                }
+                ShowCommand::Cloudflare => {
+                    resolve_cloudflare_plan(&bundle, None)?.print();
                 }
                 ShowCommand::Docker { host } => {
                     resolve_docker_plan(&bundle, &host)?.print();
@@ -148,6 +152,16 @@ fn main() -> Result<()> {
                 RenderCommand::Ssh { client } => {
                     let rendered = registry.get("ssh")?.render(&context.for_host(&client))?;
                     println!("Rendered SSH client config: {}", rendered.root.display());
+                }
+                RenderCommand::Cloudflare { tunnel } => {
+                    let rendered =
+                        registry
+                            .get("cloudflare")?
+                            .render(&match tunnel.as_deref() {
+                                Some(value) => context.for_host(value),
+                                None => context,
+                            })?;
+                    println!("Rendered Cloudflare ingress: {}", rendered.root.display());
                 }
                 RenderCommand::Docker { host } => {
                     let rendered = registry.get("docker")?.render(&context.for_host(&host))?;

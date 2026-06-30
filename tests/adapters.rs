@@ -22,6 +22,7 @@ fn builtin_registry_exposes_official_adapters() {
         ids,
         vec![
             "bind",
+            "cloudflare",
             "docker",
             "env",
             "netplan",

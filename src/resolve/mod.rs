@@ -9,6 +9,7 @@ use anyhow::Result;
 use crate::model::ConfigBundle;
 use crate::observe::ObservationSet;
 use crate::paths::NetweftPaths;
+use crate::plan::cloudflare::{ResolvedCloudflarePlan, resolve_cloudflare_plan};
 use crate::plan::dns::{ResolvedDnsPlan, resolve_dns_plan};
 use crate::plan::docker::{ResolvedDockerPlan, resolve_docker_plan};
 use crate::plan::env::{ResolvedEnvPlan, resolve_env_plan};
@@ -56,6 +57,10 @@ impl<'a> ResolvedPlan<'a> {
 
     pub fn observations(&self) -> &ObservationSet {
         &self.observations
+    }
+
+    pub fn cloudflare(&self, tunnel: Option<&str>) -> Result<ResolvedCloudflarePlan> {
+        resolve_cloudflare_plan(self.config, tunnel)
     }
 
     pub fn dns(&self) -> Result<ResolvedDnsPlan> {

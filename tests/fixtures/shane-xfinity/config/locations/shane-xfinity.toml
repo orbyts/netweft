@@ -50,3 +50,9 @@ segment = "main"
 ipv4 = "10.214.90.20"
 ipv6_mode = "slaac"
 ula_interface_id = "20"
+
+
+[external_ingress]
+mode = "cloudflare-tunnel"
+provider = "suhail-ink"
+tunnel = "nexus-ingress"

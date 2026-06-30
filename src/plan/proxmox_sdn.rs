@@ -175,10 +175,5 @@ pub fn resolve_proxmox_sdn_plan(
 }
 
 fn subnet_id(zone: &str, cidr: Ipv4Net) -> String {
-    format!(
-        "{}-{}-{}",
-        zone,
-        cidr.network().to_string().replace('.', "."),
-        cidr.prefix_len()
-    )
+    format!("{}-{}-{}", zone, cidr.network(), cidr.prefix_len())
 }

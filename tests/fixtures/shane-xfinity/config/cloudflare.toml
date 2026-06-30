@@ -1,0 +1,15 @@
+schema_version = 1
+
+[providers.suhail-ink]
+zone = "suhail.ink"
+zone_id = "9bb090acb2b1cf4c133aa96ac9bd7f86"
+account_id = "73a6a81aa7b958b2ef3dbfe480600ce4"
+tunnel_api_token_env = "CLOUDFLARE_API_TOKEN_SUHAIL_INK_TUNNEL"
+dns_api_token_env = "CLOUDFLARE_API_TOKEN_SUHAIL_INK_DNS"
+
+[tunnels.nexus-ingress]
+provider = "suhail-ink"
+connector_host = "nexus"
+origin = "https://127.0.0.1:443"
+origin_tls_verify = false
+hostnames = ["dsm.suhail.ink", "ds1621plus.suhail.ink", "zion.suhail.ink"]

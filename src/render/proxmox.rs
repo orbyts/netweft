@@ -187,7 +187,7 @@ fn render_manifest(plan: &ResolvedHostNetworkPlan) -> String {
     out.push_str("adapter=proxmox\n");
     out.push_str(&format!("host={}\n", plan.host));
     out.push_str(&format!("location={}\n", plan.location));
-    out.push_str(&format!("provider=proxmox-ifupdown2\n"));
+    out.push_str("provider=proxmox-ifupdown2\n");
 
     for bridge in &plan.bridges {
         let ipv4 = bridge
