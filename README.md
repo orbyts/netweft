@@ -6,9 +6,10 @@ Netweft validates stable infrastructure intent, resolves provider-neutral plans,
 
 ## Documentation
 
+- [Complete guide](docs/GUIDE.md)
 - [Documentation index](docs/README.md)
-- [Architecture](docs/ARCHITECTURE.md)
 - [Getting started](docs/GETTING-STARTED.md)
+- [Architecture](docs/ARCHITECTURE.md)
 - [Configuration reference](docs/configuration/README.md)
 - [Adapters](docs/adapters/README.md)
 - [Deployment](docs/deployment/README.md)

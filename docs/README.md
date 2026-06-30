@@ -1,19 +1,20 @@
 # Netweft documentation
 
-## Start here
+## New to Netweft
 
-- [Getting started](GETTING-STARTED.md)
-- [Configuration reference](configuration/README.md)
+- [Complete guide](GUIDE.md) — install, design a topology, configure every layer, render, and deploy safely.
+- [Getting started](GETTING-STARTED.md) — a short reading path through the complete guide.
+- [Configuration reference](configuration/README.md) — key-by-key TOML reference.
 
 ## Concepts
 
 - [Architecture](ARCHITECTURE.md)
-- [Configuration](CONFIGURATION.md)
+- [Configuration model](CONFIGURATION.md)
 - [Provider-neutral proxy model](PROXY-MODEL.md)
 
 ## Adapters
 
-- [Adapter overview](adapters/README.md)
+- [Adapter overview and output contract](adapters/README.md)
 - [BIND](adapters/BIND.md)
 - [Environment](adapters/ENV.md)
 - [Native Nginx](adapters/NGINX.md)
@@ -47,16 +48,7 @@
 - [SSH client configuration](deployment/SSH.md)
 - [Cloudflare ingress](deployment/CLOUDFLARE.md)
 
-## Operations
+## Operations and development
 
-- [Operations index](operations/README.md)
-- [Verification](operations/VERIFICATION.md)
-- [Troubleshooting](operations/TROUBLESHOOTING.md)
-- [Rollback](operations/ROLLBACK.md)
-
-## Development
-
-- [Development index](development/README.md)
-- [Adapter SDK](development/ADAPTERS.md)
-- [Testing](development/TESTING.md)
-- [0.2 refactor notes](development/REFACTOR-0.2.md)
+- [Operations](operations/README.md)
+- [Development](development/README.md)

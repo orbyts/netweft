@@ -1,5 +1,10 @@
 # Configuration reference
 
+Start here:
+
+- [Build a portable homelab: complete example](EXAMPLE-TOPOLOGY.md) — a file-by-file setup guide using a real topology.
+- [Configuration option index](OPTION-INDEX.md) — fast lookup for keys, types, defaults, and meaning.
+
 This is the canonical reference for Netweft TOML configuration. It is intended to be sufficient for authoring configuration without reading Rust source.
 
 ## Conventions
