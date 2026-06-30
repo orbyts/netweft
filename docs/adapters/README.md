@@ -5,6 +5,7 @@ Adapters translate validated provider-neutral plans into deterministic implement
 | Adapter | Purpose | Target scope |
 |---|---|---|
 | `bind` | BIND authoritative and recursive DNS | location |
+| `cloudflare` | Cloudflare Tunnel and public DNS reconciliation | connector host |
 | `nginx` | Native reverse-proxy configuration | proxy host |
 | `docker` | Docker daemon and named bridge reconciliation | Docker host |
 | `env` | Shell and Compose environment files | host |
@@ -13,6 +14,7 @@ Adapters translate validated provider-neutral plans into deterministic implement
 | `proxmox-guests` | VM and LXC reconciliation | Proxmox host |
 | `proxmox-sdn` | SDN zones, VNets, and subnets | Proxmox cluster host |
 | `proxmox-storage` | Proxmox storage reconciliation | Proxmox host |
+| `ssh` | Location-resolved OpenSSH client aliases | client host |
 | `systemd-mounts` | Network mount units and service dependencies | Linux host |
 | `synology-nfs-permissions` | DSM NFS permission action plan | NAS |
 

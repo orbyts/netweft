@@ -32,3 +32,18 @@ proxmox-sdn/verify.sh
 ```
 
 Other adapters use implementation-native checks documented in their deployment guide, such as `named-checkconf`, `nginx -t`, `netplan generate`, `pvesm status`, `findmnt`, and direct service tests.
+
+
+## Cloudflare ingress
+
+```bash
+netweft show cloudflare
+```
+
+On the connector host:
+
+```bash
+docker ps --filter name=cloudflared
+```
+
+Verify each configured hostname with the generated `verify.sh`.
