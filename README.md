@@ -8,7 +8,8 @@ Netweft validates stable infrastructure intent, resolves provider-neutral plans,
 
 - [Documentation index](docs/README.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [Configuration](docs/CONFIGURATION.md)
+- [Getting started](docs/GETTING-STARTED.md)
+- [Configuration reference](docs/configuration/README.md)
 - [Adapters](docs/adapters/README.md)
 - [Deployment](docs/deployment/README.md)
 - [Operations](docs/operations/README.md)
@@ -18,7 +19,7 @@ Netweft validates stable infrastructure intent, resolves provider-neutral plans,
 
 ```text
 bind
-cloudflare
+nginx
 docker
 env
 netplan
@@ -26,9 +27,10 @@ proxmox
 proxmox-guests
 proxmox-sdn
 proxmox-storage
-ssh
 synology-nfs-permissions
 systemd-mounts
+ssh
+cloudflare
 ```
 
 List the adapters compiled into the current binary:
@@ -43,8 +45,6 @@ netweft adapters list
 netweft validate
 netweft show dns
 netweft show proxy
-netweft show cloudflare
-netweft show ssh --client quasar
 netweft show docker --host nexus
 netweft show host-network --host zion
 netweft show os-network --host quasar
