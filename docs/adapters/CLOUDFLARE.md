@@ -1,14 +1,53 @@
 # Cloudflare ingress adapter
 
-Netweft models external ingress per location. `cloudflare-tunnel` mode creates or adopts a remotely managed Cloudflare Tunnel, publishes application hostnames to `<tunnel-id>.cfargotunnel.com`, and runs `cloudflared` on the connector host. The zone apex is never changed by this adapter.
+The `cloudflare` adapter resolves location-aware external ingress, reconciles a remotely managed Cloudflare Tunnel, reconciles proxied CNAME records, and renders the connector deployment for `cloudflared`.
 
-The API token value remains outside Netweft. Configure only its environment-variable name, such as `CLOUDFLARE_API_TOKEN_SUHAIL_INK`; Apogee may supply the value at shell initialization.
+## Inspect and render
 
-```sh
+```bash
+netweft validate
 netweft show cloudflare
 netweft render cloudflare --tunnel nexus-ingress
 ```
 
-Run `apply-cloudflare.sh` on the trusted client where the API-token environment variable exists. It writes `deployment.env`, which contains the connector token and must be handled as a secret. Transfer the rendered directory to the connector host, then run `sudo ./install.sh` there.
+When the active location already selects a tunnel, `--tunnel` is optional. Supplying a different tunnel is rejected.
 
-Direct-origin mode is reserved in the schema but intentionally unsupported in this release.
+## Output
+
+```text
+~/.local/share/netweft/generated/<location>/hosts/<connector>/cloudflare/<tunnel>/
+├── action-plan.txt
+├── tunnel-config.json
+├── dns-plan.json
+├── compose.yml
+├── apply-cloudflare.sh
+├── install.sh
+├── verify.sh
+└── rollback.sh
+```
+
+`apply-cloudflare.sh` later creates `deployment.env`; that file contains `TUNNEL_TOKEN` and `TUNNEL_ID` and is therefore a secret runtime artifact. It is not produced during rendering.
+
+## Resolved behavior
+
+The adapter validates that:
+
+- the active location enables `cloudflare-tunnel`;
+- the selected provider and tunnel exist;
+- the tunnel uses the location-selected provider;
+- the connector host exists and is enabled;
+- at least one hostname is present;
+- every hostname is a subdomain of the provider zone.
+
+The adapter deliberately leaves the zone apex untouched. `cloudflare-direct` is represented in the schema but is not implemented.
+
+## Secret boundary
+
+Netweft stores only the environment-variable names for two tokens:
+
+- a tunnel-management token;
+- a DNS-management token.
+
+The values must exist in the trusted shell that runs `apply-cloudflare.sh`. Netweft does not store them. The generated connector token in `deployment.env` must be transferred and stored with mode `0600`.
+
+Deployment: [Cloudflare ingress deployment](../deployment/CLOUDFLARE.md)

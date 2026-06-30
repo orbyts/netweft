@@ -7,6 +7,7 @@ Netweft renders artifacts locally. Deployment is explicit.
 ### Read-only or manual-plan adapters
 
 - BIND rendering before copy;
+- OpenSSH client snippets before local installation;
 - environment files;
 - Nginx rendering before deployment;
 - Synology NFS permission action plans;
@@ -14,6 +15,7 @@ Netweft renders artifacts locally. Deployment is explicit.
 
 ### Guarded apply-script adapters
 
+- Cloudflare remote reconciliation and connector installation;
 - Docker networking;
 - Netplan;
 - Proxmox guests;

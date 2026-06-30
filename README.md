@@ -18,7 +18,7 @@ Netweft validates stable infrastructure intent, resolves provider-neutral plans,
 
 ```text
 bind
-nginx
+cloudflare
 docker
 env
 netplan
@@ -26,6 +26,7 @@ proxmox
 proxmox-guests
 proxmox-sdn
 proxmox-storage
+ssh
 synology-nfs-permissions
 systemd-mounts
 ```
@@ -42,6 +43,8 @@ netweft adapters list
 netweft validate
 netweft show dns
 netweft show proxy
+netweft show cloudflare
+netweft show ssh --client quasar
 netweft show docker --host nexus
 netweft show host-network --host zion
 netweft show os-network --host quasar
